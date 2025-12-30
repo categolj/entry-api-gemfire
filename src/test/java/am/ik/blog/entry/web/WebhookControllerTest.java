@@ -6,10 +6,10 @@ import am.ik.blog.entry.Author;
 import am.ik.blog.entry.Category;
 import am.ik.blog.entry.Entry;
 import am.ik.blog.entry.EntryKey;
-import am.ik.blog.entry.EntryRepository;
 import am.ik.blog.entry.FrontMatter;
 import am.ik.blog.entry.MockData;
 import am.ik.blog.entry.Tag;
+import am.ik.blog.entry.gemfire.GemfireEntryRepository;
 import am.ik.blog.mockserver.MockServer;
 import java.time.Instant;
 import java.util.Base64;
@@ -27,8 +27,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ProblemDetail;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.jdbc.Sql;
 import org.springframework.web.client.RestClient;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
@@ -45,14 +43,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 				"blog.github.content-owner=public", "blog.github.content-repo=blog",
 				"blog.github.access-token=important", "blog.github.tenants.t1.content-owner=private",
 				"blog.github.tenants.t1.content-repo=blog", "blog.github.tenants.t1.access-token=secret" })
-@Sql(scripts = { "classpath:sql/clean-table.sql" })
-@ActiveProfiles({ "redis" })
 class WebhookControllerTest {
 
 	RestClient restClient;
 
 	@Autowired
-	EntryRepository entryRepository;
+	GemfireEntryRepository entryRepository;
 
 	@Autowired
 	MockServer mockServer;
@@ -247,7 +243,7 @@ class WebhookControllerTest {
 		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
 		assertThat(response.getBody()).isEqualTo(List
 			.of(Map.of("removed", Map.of("entryId", 1, "tenantId", EntryKey.requireNonNullTenantId(tenantId)))));
-		assertThat(this.entryRepository.findById(new EntryKey(1L, tenantId))).isEmpty();
+		assertThat(this.entryRepository.exists(new EntryKey(1L, tenantId))).isFalse();
 	}
 
 	@ParameterizedTest

@@ -1,11 +1,11 @@
-package am.ik.blog.entry.dsql;
+package am.ik.blog.entry.gemfire;
 
+import am.ik.blog.MockConfig;
 import am.ik.blog.TestcontainersConfiguration;
 import am.ik.blog.entry.Author;
 import am.ik.blog.entry.Category;
 import am.ik.blog.entry.Entry;
 import am.ik.blog.entry.EntryKey;
-import am.ik.blog.entry.EntryRepository;
 import am.ik.blog.entry.FrontMatter;
 import am.ik.blog.entry.MockData;
 import am.ik.blog.entry.SearchCriteria;
@@ -20,23 +20,22 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
-import org.springframework.test.context.jdbc.Sql;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK,
-		properties = { "logging.level.sql=info", "logging.level.am.ik.blog.entry.dsql.DsqlEntryRepository=warn" })
+		properties = { "logging.level.am.ik.blog.entry.gemfire.GemfireEntryRepository=warn" })
 @Testcontainers(disabledWithoutDocker = true)
-@Import({ TestcontainersConfiguration.class })
-@Sql(scripts = { "classpath:sql/clean-table.sql" })
-class DsqlEntryRepositoryTest {
+@Import({ TestcontainersConfiguration.class, MockConfig.class })
+class GemfireEntryRepositoryTest {
 
 	@Autowired
-	EntryRepository entryRepository;
+	GemfireEntryRepository entryRepository;
 
 	@BeforeEach
 	void setup() {
+		this.entryRepository.deleteAll();
 		this.entryRepository.saveAll(MockData.ALL_ENTRIES);
 	}
 
@@ -67,7 +66,7 @@ class DsqlEntryRepositoryTest {
 		this.entryRepository.save(updated);
 		assertThat(this.entryRepository.findById(entryKey)).hasValueSatisfying(e -> compareIgnoringDate(e, updated));
 		this.entryRepository.deleteById(entryKey);
-		assertThat(this.entryRepository.findById(entryKey)).isEmpty();
+		assertThat(this.entryRepository.exists(entryKey)).isFalse();
 	}
 
 	void compareIgnoringDate(Entry actual, Entry expected) {

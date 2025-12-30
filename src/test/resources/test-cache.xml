@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<cache xmlns="http://geode.apache.org/schema/cache"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://geode.apache.org/schema/cache http://geode.apache.org/schema/cache/cache-1.0.xsd"
+    version="1.0">
+  <pdx persistent="true" read-serialized="true" disk-store-name="DEFAULT">
+    <pdx-serializer>
+      <class-name>org.apache.geode.pdx.ReflectionBasedAutoSerializer</class-name>
+      <parameter name="classes">
+        <string>am\.ik\.blog\.entry\..+</string>
+      </parameter>
+    </pdx-serializer>
+  </pdx>
+  <region name="Entry">
+    <region-attributes refid="PARTITION_PERSISTENT"/>
+    <index name="idx_tenant_updated_at"
+        expression="tenantId, updatedAt"
+        from-clause="/Entry"/>
+  </region>
+</cache>

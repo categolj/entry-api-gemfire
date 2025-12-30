@@ -5,12 +5,12 @@ import am.ik.blog.TestcontainersConfiguration;
 import am.ik.blog.entry.Category;
 import am.ik.blog.entry.Entry;
 import am.ik.blog.entry.EntryKey;
-import am.ik.blog.entry.EntryRepository;
 import am.ik.blog.entry.EntryService;
 import am.ik.blog.entry.FrontMatter;
 import am.ik.blog.entry.MockData;
 import am.ik.blog.entry.Tag;
 import am.ik.blog.entry.TagAndCount;
+import am.ik.blog.entry.gemfire.GemfireEntryRepository;
 import am.ik.blog.mockserver.MockServer;
 import am.ik.blog.mockserver.MockServer.Response;
 import am.ik.pagination.CursorPage;
@@ -32,8 +32,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.http.ProblemDetail;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.jdbc.Sql;
 import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestClient;
 import org.testcontainers.junit.jupiter.Testcontainers;
@@ -56,16 +54,15 @@ import static org.assertj.core.api.Assertions.assertThat;
 		properties = { "blog.tenant.users[0]=blog-ui|{noop}empty|_=GET,LIST",
 				"blog.tenant.users[1]=readonly|{noop}secret|t1=GET,LIST",
 				"blog.tenant.users[2]=editor|{noop}password|_=EDIT,DELETE|t1=EDIT,DELETE,GET",
-				"logging.level.am.ik.blog.entry.dsql.DsqlEntryRepository=warn",
+				"blog.github.tenants.t1.api-url=http://PLACEHOLDER",
+				"logging.level.am.ik.blog.entry.gemfire.GemfireEntryRepository=warn",
 				"logging.level.org.springframework.cache=trace" })
-@Sql(scripts = { "classpath:sql/clean-table.sql" })
-@ActiveProfiles({ "redis" })
 class EntryControllerTest {
 
 	RestClient restClient;
 
 	@Autowired
-	EntryRepository entryRepository;
+	GemfireEntryRepository entryRepository;
 
 	@Autowired
 	MockServer mockServer;
@@ -89,6 +86,7 @@ class EntryControllerTest {
 						}
 						""")
 				.build());
+		this.entryRepository.deleteAll();
 	}
 
 	static Entry withTenantId(Entry entry, String tenantId) {
@@ -695,7 +693,7 @@ class EntryControllerTest {
 			.retrieve()
 			.toBodilessEntity();
 		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
-		assertThat(this.entryRepository.findById(entry1.entryKey())).isEmpty();
+		assertThat(this.entryRepository.exists(entry1.entryKey())).isFalse();
 	}
 
 	@ParameterizedTest
@@ -713,8 +711,8 @@ class EntryControllerTest {
 		assertThat(response.getBody()).containsExactly(
 				List.of(new Category("Architecture"), new Category("Microservices"), new Category("Scalability")),
 				List.of(new Category("Cloud Computing"), new Category("AWS"), new Category("DevOps")),
-				List.of(new Category("Database"), new Category("Architecture")),
 				List.of(new Category("Data Science"), new Category("Machine Learning"), new Category("Python")),
+				List.of(new Category("Database"), new Category("Architecture")),
 				List.of(new Category("DevOps"), new Category("Containerization")),
 				List.of(new Category("DevOps"), new Category("Version Control")),
 				List.of(new Category("Programming"), new Category("JavaScript"), new Category("Backend")),
@@ -738,7 +736,7 @@ class EntryControllerTest {
 		assertThat(response.getBody()).containsExactly(new TagAndCount(new Tag("architecture"), 1),
 				new TagAndCount(new Tag("aws"), 1), new TagAndCount(new Tag("cloud"), 1),
 				new TagAndCount(new Tag("containers"), 1), new TagAndCount(new Tag("cybersecurity"), 1),
-				new TagAndCount(new Tag("database"), 1), new TagAndCount(new Tag("data-science"), 1),
+				new TagAndCount(new Tag("data-science"), 1), new TagAndCount(new Tag("database"), 1),
 				new TagAndCount(new Tag("deployment"), 1), new TagAndCount(new Tag("design"), 1),
 				new TagAndCount(new Tag("docker"), 1), new TagAndCount(new Tag("express"), 1),
 				new TagAndCount(new Tag("frontend"), 1), new TagAndCount(new Tag("git"), 1),

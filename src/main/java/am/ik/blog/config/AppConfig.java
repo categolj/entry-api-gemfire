@@ -1,9 +1,5 @@
 package am.ik.blog.config;
 
-import am.ik.blog.BlogProps;
-import am.ik.blog.tokenizer.KuromojiTokenizer;
-import am.ik.blog.tokenizer.Tokenizer;
-import am.ik.blog.tokenizer.TrigramTokenizer;
 import java.time.Clock;
 import java.time.InstantSource;
 import org.springframework.context.annotation.Bean;
@@ -15,14 +11,6 @@ class AppConfig {
 	@Bean
 	InstantSource instantSource() {
 		return Clock.systemDefaultZone();
-	}
-
-	@Bean
-	Tokenizer tokenizer(BlogProps props) {
-		return switch (props.getTokenizerType()) {
-			case KUROMOJI -> new KuromojiTokenizer();
-			case TRIGRAM -> new TrigramTokenizer();
-		};
 	}
 
 	@Bean

@@ -17,6 +17,7 @@ import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
@@ -52,7 +53,8 @@ public class GithubEntryFetcher implements EntryFetcher {
 		Long entryId = Entry.parseId(Paths.get(path).getFileName().toString());
 		EntryKey entryKey = new EntryKey(entryId, tenantId);
 		ResponseEntity<File> response = gitHubClient.getFile(owner, repo, path);
-		if (response.getStatusCode() == HttpStatus.OK) {
+		HttpStatusCode statusCode = response.getStatusCode();
+		if (statusCode == HttpStatus.OK) {
 			File file = response.getBody();
 			Assert.notNull(file, "File must not be null");
 			logger.info("Retrieved file: {}", file.url());
@@ -62,12 +64,14 @@ public class GithubEntryFetcher implements EntryFetcher {
 					: toAuthor(commits.getFirst());
 			return Optional.of(this.entryParser.fromMarkdown(entryKey, file.decode(), created, updated).build());
 		}
-		else if (response.getStatusCode() == HttpStatus.NOT_FOUND) {
+		else if (statusCode.is4xxClientError()) {
+			logger.info("Failed to retrieve file statusCode: {}, tenantId: {}, owner: {}, repo: {}, path: {}",
+					statusCode.value(), tenantId, owner, repo, path);
 			return Optional.empty();
 		}
 		else {
-			throw new ResponseStatusException(response.getStatusCode(),
-					"Unexpected response returned from Github File API :" + response.getStatusCode());
+			throw new ResponseStatusException(statusCode,
+					"Unexpected response returned from Github File API :" + statusCode);
 		}
 	}
 

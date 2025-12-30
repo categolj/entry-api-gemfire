@@ -19,9 +19,15 @@ on:
 jobs:
   unit-test:
     uses: categolj/workflows/.github/workflows/unit-test.yaml@main
+    secrets:
+      MAVEN_SERVER_ID: ${{ secrets.MAVEN_SERVER_ID }}
+      MAVEN_TOKEN: ${{ secrets.MAVEN_TOKEN }}
   build-oci-image-jvm-amd64:
     needs: unit-test
     uses: categolj/workflows/.github/workflows/build-oci-image-jvm.yaml@main
+    secrets:
+      MAVEN_SERVER_ID: ${{ secrets.MAVEN_SERVER_ID }}
+      MAVEN_TOKEN: ${{ secrets.MAVEN_TOKEN }}
     with:
       image_name: jvm_amd64
       image_file: jvm_amd64.yaml
@@ -29,6 +35,9 @@ jobs:
   build-oci-image-jvm-aarch64:
     needs: unit-test
     uses: categolj/workflows/.github/workflows/build-oci-image-jvm.yaml@main
+    secrets:
+      MAVEN_SERVER_ID: ${{ secrets.MAVEN_SERVER_ID }}
+      MAVEN_TOKEN: ${{ secrets.MAVEN_TOKEN }}
     with:
       image_name: jvm_aarch64
       image_file: jvm_aarch64.yaml

@@ -8,6 +8,7 @@ import am.ik.blog.github.GitHubClient;
 import am.ik.blog.github.GitHubUserContentClient;
 import am.ik.blog.github.Parent;
 import am.ik.blog.github.Tree;
+
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Predicate;
@@ -19,6 +20,7 @@ import org.springframework.aot.hint.RuntimeHintsRegistrar;
 import org.springframework.boot.context.properties.bind.Bindable;
 import org.springframework.boot.context.properties.bind.Binder;
 import org.springframework.boot.context.properties.source.ConfigurationPropertyName;
+import org.springframework.boot.restclient.RestClientCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
@@ -47,11 +49,13 @@ class GitHubConfig {
 
 	@Bean
 	RestClientHttpServiceGroupConfigurer githubRestClientHttpServiceGroupConfigurer(GitHubProps props) {
+		ErrorLoggingInterceptor errorLoggingInterceptor = new ErrorLoggingInterceptor();
 		return groups -> {
 			groups.filterByName("github").forEachClient((_, builder) -> {
 				builder.baseUrl(props.getApiUrl())
 					.defaultHeader(HttpHeaders.AUTHORIZATION, "token %s".formatted(props.getAccessToken()))
-					.defaultStatusHandler(allwaysTrueStatusPredicate, noOpErrorHandler);
+					.defaultStatusHandler(allwaysTrueStatusPredicate, noOpErrorHandler)
+					.requestInterceptor(errorLoggingInterceptor);
 			});
 			Map<String, GitHubProps> tenants = props.getTenants();
 			if (!CollectionUtils.isEmpty(tenants)) {
@@ -60,14 +64,16 @@ class GitHubConfig {
 						builder.baseUrl(props.getApiUrl())
 							.defaultHeader(HttpHeaders.AUTHORIZATION,
 									"token %s".formatted(tenantProps.getAccessToken()))
-							.defaultStatusHandler(allwaysTrueStatusPredicate, noOpErrorHandler);
+							.defaultStatusHandler(allwaysTrueStatusPredicate, noOpErrorHandler)
+							.requestInterceptor(errorLoggingInterceptor);
 					});
 				});
 			}
 			groups.filterByName("githubusercontent").forEachClient((_, builder) -> {
 				builder.baseUrl("https://raw.githubusercontent.com")
 					.defaultStatusHandler(allwaysTrueStatusPredicate, noOpErrorHandler)
-					.defaultHeader(HttpHeaders.AUTHORIZATION, "token %s".formatted(props.getAccessToken()));
+					.defaultHeader(HttpHeaders.AUTHORIZATION, "token %s".formatted(props.getAccessToken()))
+					.requestInterceptor(errorLoggingInterceptor);
 			});
 		};
 	}

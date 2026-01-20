@@ -82,6 +82,8 @@ export function EntryPreview() {
         } else {
           newEntry = await api.createEntry(tenant, request);
         }
+        // Clear draft after successful submission
+        sessionStorage.removeItem(`entryDraft_${tenant}_create`);
         // Invalidate all SWR cache to ensure entry list is refreshed
         await mutate(() => true);
         navigate(`/console/${tenant}/entries/${newEntry.entryId}`);
@@ -96,6 +98,8 @@ export function EntryPreview() {
         const idIndex = pathParts.indexOf('entries') + 1;
         const entryId = parseInt(pathParts[idIndex], 10);
         const updatedEntry = await api.updateEntry(tenant, entryId, request);
+        // Clear draft after successful submission
+        sessionStorage.removeItem(`entryDraft_${tenant}_edit_${entryId}`);
         // Invalidate all SWR cache to ensure entry list is refreshed
         await mutate(() => true);
         navigate(`/console/${tenant}/entries/${updatedEntry.entryId}`);

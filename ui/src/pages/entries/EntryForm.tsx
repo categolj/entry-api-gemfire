@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams, Link, useLocation } from 'react-router-dom';
 import MDEditor from '@uiw/react-md-editor';
-import { useTenant, useApi } from '../../hooks';
+import { useTenant, useApi, useDraft } from '../../hooks';
 import { api } from '../../services';
-import { LoadingSpinner, ErrorAlert, Button } from '../../components/common';
+import { LoadingSpinner, ErrorAlert, Button, DraftBanner } from '../../components/common';
 import { Input, Textarea, TagInput, CategoryInput } from '../../components/forms';
 import { FrontMatter, PreviewState } from '../../types';
 import { parseMarkdownWithFrontMatter, createMarkdownWithFrontMatter } from '../../utils';
@@ -50,6 +50,15 @@ export function EntryForm({ mode }: EntryFormProps) {
     [tenant, entryId, mode],
     { immediate: mode === 'edit' }
   );
+
+  const draftKey = mode === 'create'
+    ? `entryDraft_${tenant}_create`
+    : `entryDraft_${tenant}_edit_${entryId}`;
+
+  const draft = useDraft({
+    key: draftKey,
+    enabled: !loadingEntry && !isLoadingExisting,
+  });
 
   // Check if we're returning from preview with state
   useEffect(() => {
@@ -109,6 +118,73 @@ export function EntryForm({ mode }: EntryFormProps) {
       setMarkdownContent(createMarkdownWithFrontMatter(frontMatter, formData.content));
     }
   }, [updateTimestamp, markdownMode, existingEntry, formData, mode]);
+
+  // Restore draft from sessionStorage
+  useEffect(() => {
+    // Skip if returning from preview (highest priority)
+    // Check both the state flag and the actual location.state to handle timing
+    const previewState = location.state as PreviewState | undefined;
+    if (isRestoredFromPreview || previewState?.formData) return;
+
+    // Skip if still loading in edit mode
+    if (mode === 'edit' && loadingEntry) return;
+
+    // Skip if edit mode and entry data has been loaded
+    if (mode === 'edit' && existingEntry) return;
+
+    const restoredDraft = draft.restore();
+    if (restoredDraft) {
+      setFormData(restoredDraft.formData);
+      setEntryIdInput(restoredDraft.entryIdInput || '');
+      setMarkdownMode(restoredDraft.markdownMode || false);
+      setUpdateTimestamp(restoredDraft.updateTimestamp ?? true);
+    }
+  }, [mode, loadingEntry, existingEntry, isRestoredFromPreview, location.state, draft]);
+
+  // Auto-save draft to sessionStorage
+  useEffect(() => {
+    if (loadingEntry || isLoadingExisting) return;
+
+    // Skip if form is empty in create mode
+    const isEmpty = !formData.title.trim() && !formData.content.trim() && !entryIdInput.trim();
+    if (mode === 'create' && isEmpty) return;
+
+    draft.save({
+      formData,
+      entryIdInput,
+      markdownMode,
+      updateTimestamp,
+    });
+  }, [formData, entryIdInput, markdownMode, updateTimestamp, loadingEntry, isLoadingExisting, mode, draft]);
+
+  const resetForm = () => {
+    if (mode === 'create') {
+      setFormData({
+        title: '',
+        summary: '',
+        categories: [],
+        tags: [],
+        content: '',
+      });
+      setEntryIdInput('');
+      setMarkdownMode(false);
+      setUpdateTimestamp(true);
+    } else if (existingEntry) {
+      // Reset to existing entry data
+      setFormData({
+        title: existingEntry.frontMatter.title || '',
+        summary: existingEntry.frontMatter.summary || '',
+        categories: existingEntry.frontMatter.categories?.map(c => c.name) || [],
+        tags: existingEntry.frontMatter.tags?.map(t => t.name) || [],
+        content: existingEntry.content || '',
+      });
+    }
+  };
+
+  const handleDiscardDraft = () => {
+    draft.clear();
+    resetForm();
+  };
 
   const handleFieldChange = (field: keyof typeof formData, value: string | string[]) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -320,6 +396,15 @@ export function EntryForm({ mode }: EntryFormProps) {
         </div>
       )}
 
+      {/* Draft Restored Banner */}
+      {draft.status === 'restored' && draft.restoredAt && (
+        <DraftBanner
+          restoredAt={draft.restoredAt}
+          onDiscard={handleDiscardDraft}
+          onDismiss={draft.dismiss}
+        />
+      )}
+
       <form onSubmit={handleSubmit} className="space-y-6">
         {markdownMode ? (
           /* Markdown Editor */
@@ -509,7 +594,15 @@ export function EntryForm({ mode }: EntryFormProps) {
               </label>
             )}
           </div>
-          <div className="flex space-x-3">
+          <div className="flex items-center space-x-3">
+            {draft.status === 'saved' && (
+              <span className="inline-flex items-center space-x-1.5 px-3 py-1.5 border border-green-300 bg-green-50 text-green-700 text-sm font-medium">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+                <span>Draft saved</span>
+              </span>
+            )}
             <Button
               type="submit"
               disabled={!formData.title.trim() || !formData.content.trim() || isFormBusy}

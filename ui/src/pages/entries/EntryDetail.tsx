@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useSWRConfig } from 'swr';
 import { useTenant, useApi } from '../../hooks';
 import { api } from '../../services';
 import { LoadingSpinner, ErrorAlert, Button } from '../../components/common';
@@ -8,6 +9,7 @@ export function EntryDetail() {
   const { tenant } = useTenant();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { mutate } = useSWRConfig();
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
@@ -30,6 +32,8 @@ export function EntryDetail() {
       setDeleteLoading(true);
       try {
         await api.deleteEntry(tenant, entry.entryId);
+        // Invalidate all SWR cache to ensure entry list is refreshed
+        await mutate(() => true);
         navigate(`/console/${tenant}`);
       } catch (error) {
         console.error('Failed to delete entry:', error);

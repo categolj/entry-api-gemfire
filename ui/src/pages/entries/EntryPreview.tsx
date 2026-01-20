@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
+import { useSWRConfig } from 'swr';
 import { useTenant } from '../../hooks';
 import { api } from '../../services';
 import { ErrorAlert, DiffViewer } from '../../components/common';
@@ -11,6 +12,7 @@ export function EntryPreview() {
   const { tenant } = useTenant();
   const navigate = useNavigate();
   const location = useLocation();
+  const { mutate } = useSWRConfig();
   const state = location.state as PreviewState;
   
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -72,7 +74,7 @@ export function EntryPreview() {
           frontMatter,
           content: state.formData.content,
         };
-        
+
         let newEntry;
         if (state.entryIdInput?.trim()) {
           const entryId = parseInt(state.entryIdInput.trim(), 10);
@@ -80,18 +82,22 @@ export function EntryPreview() {
         } else {
           newEntry = await api.createEntry(tenant, request);
         }
+        // Invalidate all SWR cache to ensure entry list is refreshed
+        await mutate(() => true);
         navigate(`/console/${tenant}/entries/${newEntry.entryId}`);
       } else {
         const request: UpdateEntryRequest = {
           frontMatter,
           content: state.formData.content,
         };
-        
+
         // Extract entry ID from the edit path: /console/{tenant}/entries/{id}/edit/preview
         const pathParts = location.pathname.split('/');
         const idIndex = pathParts.indexOf('entries') + 1;
         const entryId = parseInt(pathParts[idIndex], 10);
         const updatedEntry = await api.updateEntry(tenant, entryId, request);
+        // Invalidate all SWR cache to ensure entry list is refreshed
+        await mutate(() => true);
         navigate(`/console/${tenant}/entries/${updatedEntry.entryId}`);
       }
     } catch (error) {

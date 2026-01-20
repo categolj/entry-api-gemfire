@@ -46,8 +46,8 @@ export function EntryList() {
     setSize,
     mutate
   } = useSWRInfinite<PaginationResult<Entry>, Error>(getKey, fetcher, {
-    revalidateOnFocus: false,
-    revalidateFirstPage: false
+    revalidateOnFocus: true,
+    revalidateFirstPage: true
   });
 
   // Flatten all entries from all pages

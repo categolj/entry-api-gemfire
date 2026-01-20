@@ -31,11 +31,11 @@ export function EntryForm({ mode }: EntryFormProps) {
   
   const [markdownMode, setMarkdownMode] = useState(false);
   const [markdownContent, setMarkdownContent] = useState('');
-  // const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [updateTimestamp, setUpdateTimestamp] = useState(true);
   const [originalMarkdown, setOriginalMarkdown] = useState('');
   const [isRestoredFromPreview, setIsRestoredFromPreview] = useState(false);
+  const [isLoadingExisting, setIsLoadingExisting] = useState(false);
 
   // Load existing entry for edit mode
   const {
@@ -143,6 +143,39 @@ export function EntryForm({ mode }: EntryFormProps) {
       tags: frontMatter.tags?.map(t => t.name) || prev.tags,
       content: content || prev.content,
     }));
+  };
+
+  const handleLoadExisting = async () => {
+    if (!entryIdInput.trim()) return;
+
+    const targetId = parseInt(entryIdInput.trim(), 10);
+    if (isNaN(targetId)) {
+      setSubmitError('Invalid Entry ID');
+      return;
+    }
+
+    setIsLoadingExisting(true);
+    setSubmitError(null);
+
+    try {
+      const entry = await api.getEntry(tenant, targetId);
+      setFormData({
+        title: entry.frontMatter.title || '',
+        summary: entry.frontMatter.summary || '',
+        categories: entry.frontMatter.categories?.map(c => c.name) || [],
+        tags: entry.frontMatter.tags?.map(t => t.name) || [],
+        content: entry.content || '',
+      });
+
+      // Update markdown content as well
+      const markdown = createMarkdownWithFrontMatter(entry.frontMatter, entry.content);
+      setMarkdownContent(markdown);
+      setOriginalMarkdown(markdown);
+    } catch (error) {
+      setSubmitError(`Entry with ID ${targetId} not found`);
+    } finally {
+      setIsLoadingExisting(false);
+    }
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -270,13 +303,32 @@ export function EntryForm({ mode }: EntryFormProps) {
             {mode === 'create' && (
               <div className="bg-white shadow rounded-lg p-4 mb-4">
                 <h3 className="text-lg font-medium text-gray-900 mb-3">Entry ID</h3>
-                <Input
-                  label="Entry ID (Optional)"
-                  type="number"
-                  value={entryIdInput}
-                  onChange={(e) => setEntryIdInput(e.target.value)}
-                  placeholder="Leave empty for auto-generated ID"
-                />
+                <div className="flex items-end space-x-2">
+                  <div className="w-80">
+                    <Input
+                      label="Entry ID (Optional)"
+                      type="number"
+                      value={entryIdInput}
+                      onChange={(e) => setEntryIdInput(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' && entryIdInput.trim() && !isLoadingExisting) {
+                          e.preventDefault();
+                          void handleLoadExisting();
+                        }
+                      }}
+                      placeholder="Leave empty for auto-generated ID"
+                    />
+                  </div>
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    onClick={() => void handleLoadExisting()}
+                    disabled={!entryIdInput.trim() || isLoadingExisting}
+                    loading={isLoadingExisting}
+                  >
+                    Load
+                  </Button>
+                </div>
               </div>
             )}
             <div className="bg-white shadow rounded-lg p-4">
@@ -320,13 +372,32 @@ export function EntryForm({ mode }: EntryFormProps) {
                   rows={2}
                 />
                 {mode === 'create' && (
-                  <Input
-                    label="Entry ID (Optional)"
-                    type="number"
-                    value={entryIdInput}
-                    onChange={(e) => setEntryIdInput(e.target.value)}
-                    placeholder="Leave empty for auto-generated ID"
-                  />
+                  <div className="flex items-end space-x-2">
+                    <div className="w-80">
+                      <Input
+                        label="Entry ID (Optional)"
+                        type="number"
+                        value={entryIdInput}
+                        onChange={(e) => setEntryIdInput(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' && entryIdInput.trim() && !isLoadingExisting) {
+                            e.preventDefault();
+                            void handleLoadExisting();
+                          }
+                        }}
+                        placeholder="Leave empty for auto-generated ID"
+                      />
+                    </div>
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      onClick={() => void handleLoadExisting()}
+                      disabled={!entryIdInput.trim() || isLoadingExisting}
+                      loading={isLoadingExisting}
+                    >
+                      Load
+                    </Button>
+                  </div>
                 )}
               </div>
             </div>

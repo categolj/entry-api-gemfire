@@ -32,7 +32,7 @@ export function EntryForm({ mode }: EntryFormProps) {
   const [markdownMode, setMarkdownMode] = useState(false);
   const [markdownContent, setMarkdownContent] = useState('');
   const [submitError, setSubmitError] = useState<string | null>(null);
-  const [updateTimestamp, setUpdateTimestamp] = useState(true);
+  const [updateTimestamp, setUpdateTimestamp] = useState(false);
   const [originalMarkdown, setOriginalMarkdown] = useState('');
   const [isRestoredFromPreview, setIsRestoredFromPreview] = useState(false);
   const [isLoadingExisting, setIsLoadingExisting] = useState(false);

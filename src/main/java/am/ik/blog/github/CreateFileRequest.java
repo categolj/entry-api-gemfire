@@ -1,5 +1,6 @@
 package am.ik.blog.github;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -11,6 +12,7 @@ import org.jspecify.annotations.Nullable;
  * @param committer committer info (optional)
  * @param author author info (optional)
  */
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public record CreateFileRequest(String message, String content, @Nullable String branch,
 		@Nullable GitCommitter committer, @Nullable GitCommitter author) {
 

@@ -102,13 +102,23 @@ public class MockServer implements AutoCloseable {
 		server.stop(0);
 	}
 
-	public record Request(HttpMethod method, String path, Map<String, String> queryParams) {
+	public record Request(HttpMethod method, String path, Map<String, String> queryParams, String body) {
 		public static Request from(HttpExchange exchange) {
 			HttpMethod method = HttpMethod.valueOf(exchange.getRequestMethod());
 			URI uri = exchange.getRequestURI();
 			String path = uri.getPath();
 			Map<String, String> queryParams = parseQueryString(uri.getQuery());
-			return new Request(method, path, queryParams);
+			String body = readBody(exchange);
+			return new Request(method, path, queryParams, body);
+		}
+
+		private static String readBody(HttpExchange exchange) {
+			try (var is = exchange.getRequestBody()) {
+				return new String(is.readAllBytes(), java.nio.charset.StandardCharsets.UTF_8);
+			}
+			catch (IOException e) {
+				return "";
+			}
 		}
 
 		private static Map<String, String> parseQueryString(String query) {

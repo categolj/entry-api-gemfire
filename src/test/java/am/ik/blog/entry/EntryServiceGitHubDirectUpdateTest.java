@@ -287,6 +287,17 @@ class EntryServiceGitHubDirectUpdateTest {
 	}
 
 	@Test
+	void deleteById_shouldDeleteFromRepositoryEvenWhenFileNotExistsOnGitHub() {
+		EntryKey entryKey = new EntryKey(8L, null);
+
+		// File does not exist on GitHub (fallback returns 404)
+		this.entryService.deleteById(null, entryKey);
+
+		// Repository should still be updated
+		verify(this.entryRepository).deleteById(entryKey);
+	}
+
+	@Test
 	void save_shouldUseRepositoryWhenDirectUpdateIsFalse() {
 		this.gitHubProps.setDirectUpdate(false);
 		try {

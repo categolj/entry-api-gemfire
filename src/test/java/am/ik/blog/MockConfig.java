@@ -31,11 +31,12 @@ public class MockConfig {
 	}
 
 	@Bean
-	DynamicPropertyRegistrar gitDynamicPropertyRegistrar(MockServer mockServer) {
+	DynamicPropertyRegistrar mockServerDynamicPropertyRegistrar(MockServer mockServer) {
 		return registry -> {
 			int port = mockServer.port();
 			registry.add("blog.github.api-url", () -> "http://127.0.0.1:%d".formatted(port));
 			registry.add("blog.github.tenants.t1.api-url", () -> "http://127.0.0.1:%d".formatted(port));
+			registry.add("spring.ai.openai.base-url", () -> "http://127.0.0.1:%d".formatted(port));
 		};
 	}
 

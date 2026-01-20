@@ -160,6 +160,8 @@ public class EntryService {
 						"Failed to update file on GitHub: " + updateResponse.getStatusCode());
 			}
 		}
+		// Also update the repository
+		this.entryRepository.save(entry);
 		return entry;
 	}
 
@@ -182,6 +184,8 @@ public class EntryService {
 				throw new ResponseStatusException(HttpStatus.valueOf(deleteResponse.getStatusCode().value()),
 						"Failed to delete file on GitHub: " + deleteResponse.getStatusCode());
 			}
+			// Also delete from the repository
+			this.entryRepository.deleteById(entryKey);
 		}
 		else {
 			logger.info("action=skip_delete tenantId={} reason=not_found owner={} repo={} path={}", tenantId, owner,

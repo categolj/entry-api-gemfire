@@ -27,6 +27,7 @@ import tools.jackson.databind.json.JsonMapper;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -158,7 +159,8 @@ class EntryServiceGitHubDirectUpdateTest {
 		Entry result = this.entryService.save(null, entry);
 
 		assertThat(result).isEqualTo(entry);
-		verify(this.entryRepository, never()).save(entry);
+		// Repository should also be updated
+		verify(this.entryRepository).save(entry);
 	}
 
 	@Test
@@ -224,7 +226,8 @@ class EntryServiceGitHubDirectUpdateTest {
 		Entry result = this.entryService.save(null, entry);
 
 		assertThat(result).isEqualTo(entry);
-		verify(this.entryRepository, never()).save(entry);
+		// Repository should also be updated
+		verify(this.entryRepository).save(entry);
 	}
 
 	@Test
@@ -279,7 +282,8 @@ class EntryServiceGitHubDirectUpdateTest {
 
 		this.entryService.deleteById(null, entryKey);
 
-		verify(this.entryRepository, never()).deleteById(entryKey);
+		// Repository should also be updated
+		verify(this.entryRepository).deleteById(entryKey);
 	}
 
 	@Test
@@ -371,7 +375,10 @@ class EntryServiceGitHubDirectUpdateTest {
 
 		this.entryService.updateSummary(null, entryKey, "This is a new summary");
 
+		// updateSummary should not be called directly, but save should be called
 		verify(this.entryRepository, never()).updateSummary(entryKey, "This is a new summary");
+		// Repository should also be updated via save
+		verify(this.entryRepository).save(any(Entry.class));
 	}
 
 	@Test

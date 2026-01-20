@@ -36,6 +36,7 @@ export function EntryForm({ mode }: EntryFormProps) {
   const [originalMarkdown, setOriginalMarkdown] = useState('');
   const [isRestoredFromPreview, setIsRestoredFromPreview] = useState(false);
   const [isLoadingExisting, setIsLoadingExisting] = useState(false);
+  const [isSummarizing, setIsSummarizing] = useState(false);
 
   // Load existing entry for edit mode
   const {
@@ -175,6 +176,25 @@ export function EntryForm({ mode }: EntryFormProps) {
       setSubmitError(`Entry with ID ${targetId} not found`);
     } finally {
       setIsLoadingExisting(false);
+    }
+  };
+
+  const handleAutoSummarize = async () => {
+    if (!formData.content.trim()) {
+      setSubmitError('Content is required to generate summary');
+      return;
+    }
+
+    setIsSummarizing(true);
+    setSubmitError(null);
+
+    try {
+      const summary = await api.summarize(formData.content);
+      handleFieldChange('summary', summary);
+    } catch (error) {
+      setSubmitError(error instanceof Error ? error.message : 'Failed to generate summary');
+    } finally {
+      setIsSummarizing(false);
     }
   };
 
@@ -364,13 +384,27 @@ export function EntryForm({ mode }: EntryFormProps) {
                   placeholder="Enter entry title"
                   required
                 />
-                <Textarea
-                  label="Summary"
-                  value={formData.summary}
-                  onChange={(e) => handleFieldChange('summary', e.target.value)}
-                  placeholder="Brief description of the entry"
-                  rows={2}
-                />
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="block text-sm font-medium text-black">Summary</label>
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => void handleAutoSummarize()}
+                      disabled={isSummarizing || !formData.content.trim()}
+                      loading={isSummarizing}
+                    >
+                      Auto Generate
+                    </Button>
+                  </div>
+                  <Textarea
+                    value={formData.summary}
+                    onChange={(e) => handleFieldChange('summary', e.target.value)}
+                    placeholder="Brief description of the entry"
+                    rows={2}
+                  />
+                </div>
                 {mode === 'create' && (
                   <div className="flex items-end space-x-2">
                     <div className="w-80">

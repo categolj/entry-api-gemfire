@@ -1,4 +1,4 @@
-import { Entry, PaginationResult, SearchCriteria, CreateEntryRequest, UpdateEntryRequest, TagAndCount, Category, ProblemDetail } from '../types';
+import { Category, CreateEntryRequest, Entry, PaginationResult, ProblemDetail, SearchCriteria, TagAndCount, UpdateEntryRequest } from '../types';
 import { createMarkdownWithFrontMatter } from '../utils';
 
 const DEFAULT_TENANT = '_';
@@ -193,6 +193,20 @@ export const api = {
       headers: buildHeaders(),
     });
     return handleResponse<TagAndCount[]>(response);
+  },
+
+  // Summary operations
+  async summarize(content: string): Promise<string> {
+    const response = await fetch('/summarize', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...buildHeaders(),
+      },
+      body: JSON.stringify({ content }),
+    });
+    const result = await handleResponse<{ summary: string }>(response);
+    return result.summary;
   },
 };
 

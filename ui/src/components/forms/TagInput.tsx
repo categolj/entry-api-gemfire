@@ -6,13 +6,15 @@ interface TagInputProps {
   onChange: (tags: string[]) => void;
   placeholder?: string;
   error?: string;
+  disabled?: boolean;
 }
 
-export function TagInput({ label, value, onChange, placeholder = "Add tags and press Enter", error }: TagInputProps) {
+export function TagInput({ label, value, onChange, placeholder = "Add tags and press Enter", error, disabled = false }: TagInputProps) {
   const [inputValue, setInputValue] = useState('');
   const inputId = `tag-input-${Math.random().toString(36).substr(2, 9)}`;
 
   const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+    if (disabled) return;
     if (e.key === 'Enter') {
       e.preventDefault();
       const trimmedValue = inputValue.trim();
@@ -36,7 +38,7 @@ export function TagInput({ label, value, onChange, placeholder = "Add tags and p
           {label}
         </label>
       )}
-      <div className={`flex flex-wrap gap-2 p-2 border min-h-[2.5rem] ${error ? 'border-red-400' : 'border-gray-300'} focus-within:border-black transition-colors`}>
+      <div className={`flex flex-wrap gap-2 p-2 border min-h-[2.5rem] ${error ? 'border-red-400' : 'border-gray-300'} ${disabled ? 'bg-gray-50' : ''} focus-within:border-black transition-colors`}>
         {value.map((tag, index) => (
           <span
             key={index}
@@ -46,7 +48,8 @@ export function TagInput({ label, value, onChange, placeholder = "Add tags and p
             <button
               type="button"
               onClick={() => removeTag(index)}
-              className="ml-1 text-gray-500 hover:text-black focus:outline-none"
+              disabled={disabled}
+              className="ml-1 text-gray-500 hover:text-black focus:outline-none disabled:opacity-40 disabled:cursor-not-allowed"
             >
               x
             </button>
@@ -59,7 +62,8 @@ export function TagInput({ label, value, onChange, placeholder = "Add tags and p
           onChange={(e) => setInputValue(e.target.value)}
           onKeyDown={handleKeyDown}
           placeholder={value.length === 0 ? placeholder : ''}
-          className="flex-1 min-w-[120px] border-none outline-none bg-transparent"
+          disabled={disabled}
+          className="flex-1 min-w-[120px] border-none outline-none bg-transparent disabled:cursor-not-allowed"
         />
       </div>
       {error && <p className="mt-1 text-sm text-red-600">{error}</p>}

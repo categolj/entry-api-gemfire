@@ -6,9 +6,10 @@ interface CategoryInputProps {
   onChange: (categories: string[]) => void;
   placeholder?: string;
   error?: string;
+  disabled?: boolean;
 }
 
-export function CategoryInput({ label, value, onChange, placeholder = "Add categories (e.g., Tech>Programming or individual categories)", error }: CategoryInputProps) {
+export function CategoryInput({ label, value, onChange, placeholder = "Add categories (e.g., Tech>Programming or individual categories)", error, disabled = false }: CategoryInputProps) {
   const [inputValue, setInputValue] = useState('');
   const inputId = `category-input-${Math.random().toString(36).substr(2, 9)}`;
 
@@ -60,7 +61,8 @@ export function CategoryInput({ label, value, onChange, placeholder = "Add categ
                   <button
                     type="button"
                     onClick={() => removeCategory(index)}
-                    className="ml-2 text-gray-500 hover:text-black focus:outline-none"
+                    disabled={disabled}
+                    className="ml-2 text-gray-500 hover:text-black focus:outline-none disabled:opacity-40 disabled:cursor-not-allowed"
                     title="Remove category"
                   >
                     x
@@ -85,19 +87,20 @@ export function CategoryInput({ label, value, onChange, placeholder = "Add categ
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
           onKeyDown={(e) => {
-            if (e.key === 'Enter') {
+            if (e.key === 'Enter' && !disabled) {
               e.preventDefault();
               console.log('Enter key pressed');
               addCategory();
             }
           }}
           placeholder={placeholder}
-          className={`flex-1 px-3 py-2 border placeholder-gray-400 focus:outline-none focus:border-black transition-colors ${error ? 'border-red-400' : 'border-gray-300'}`}
+          disabled={disabled}
+          className={`flex-1 px-3 py-2 border placeholder-gray-400 focus:outline-none focus:border-black transition-colors disabled:bg-gray-50 disabled:cursor-not-allowed ${error ? 'border-red-400' : 'border-gray-300'}`}
         />
         <button
           type="button"
           onClick={handleButtonClick}
-          disabled={!inputValue.trim()}
+          disabled={!inputValue.trim() || disabled}
           className="px-4 py-2 bg-black text-white hover:opacity-80 focus:outline-none disabled:opacity-40 disabled:cursor-not-allowed transition-opacity"
         >
           Add

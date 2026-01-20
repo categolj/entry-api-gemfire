@@ -38,6 +38,8 @@ export function EntryForm({ mode }: EntryFormProps) {
   const [isLoadingExisting, setIsLoadingExisting] = useState(false);
   const [isSummarizing, setIsSummarizing] = useState(false);
 
+  const isFormBusy = isLoadingExisting || isSummarizing;
+
   // Load existing entry for edit mode
   const {
     data: existingEntry,
@@ -275,7 +277,8 @@ export function EntryForm({ mode }: EntryFormProps) {
             <button
               type="button"
               onClick={() => setMarkdownMode(false)}
-              className={`px-4 py-2 text-sm font-medium ${
+              disabled={isFormBusy}
+              className={`px-4 py-2 text-sm font-medium disabled:opacity-40 disabled:cursor-not-allowed ${
                 !markdownMode
                   ? 'bg-black text-white'
                   : 'bg-white text-black hover:bg-gray-50'
@@ -297,7 +300,8 @@ export function EntryForm({ mode }: EntryFormProps) {
                   setMarkdownContent(createMarkdownWithFrontMatter(frontMatter, formData.content));
                 }
               }}
-              className={`px-4 py-2 text-sm font-medium border-l border-gray-300 ${
+              disabled={isFormBusy}
+              className={`px-4 py-2 text-sm font-medium border-l border-gray-300 disabled:opacity-40 disabled:cursor-not-allowed ${
                 markdownMode
                   ? 'bg-black text-white'
                   : 'bg-white text-black hover:bg-gray-50'
@@ -337,13 +341,14 @@ export function EntryForm({ mode }: EntryFormProps) {
                         }
                       }}
                       placeholder="Leave empty for auto-generated ID"
+                      disabled={isFormBusy}
                     />
                   </div>
                   <Button
                     type="button"
                     variant="secondary"
                     onClick={() => void handleLoadExisting()}
-                    disabled={!entryIdInput.trim() || isLoadingExisting}
+                    disabled={!entryIdInput.trim() || isFormBusy}
                     loading={isLoadingExisting}
                   >
                     Load
@@ -351,7 +356,7 @@ export function EntryForm({ mode }: EntryFormProps) {
                 </div>
               </div>
             )}
-            <div className="border border-gray-200 p-4">
+            <div className={`border border-gray-200 p-4 ${isFormBusy ? 'opacity-60 pointer-events-none' : ''}`}>
               <div>
                 <label className="block text-sm font-medium text-black mb-2">
                   Markdown Content
@@ -383,6 +388,7 @@ export function EntryForm({ mode }: EntryFormProps) {
                   onChange={(e) => handleFieldChange('title', e.target.value)}
                   placeholder="Enter entry title"
                   required
+                  disabled={isFormBusy}
                 />
                 <div>
                   <div className="flex items-center justify-between mb-1">
@@ -403,6 +409,7 @@ export function EntryForm({ mode }: EntryFormProps) {
                     onChange={(e) => handleFieldChange('summary', e.target.value)}
                     placeholder="Brief description of the entry"
                     rows={2}
+                    disabled={isFormBusy}
                   />
                 </div>
                 {mode === 'create' && (
@@ -420,13 +427,14 @@ export function EntryForm({ mode }: EntryFormProps) {
                           }
                         }}
                         placeholder="Leave empty for auto-generated ID"
+                        disabled={isFormBusy}
                       />
                     </div>
                     <Button
                       type="button"
                       variant="secondary"
                       onClick={() => void handleLoadExisting()}
-                      disabled={!entryIdInput.trim() || isLoadingExisting}
+                      disabled={!entryIdInput.trim() || isFormBusy}
                       loading={isLoadingExisting}
                     >
                       Load
@@ -447,17 +455,19 @@ export function EntryForm({ mode }: EntryFormProps) {
                   label="Categories"
                   value={formData.categories}
                   onChange={(categories) => handleFieldChange('categories', categories)}
+                  disabled={isFormBusy}
                 />
                 <TagInput
                   label="Tags"
                   value={formData.tags}
                   onChange={(tags) => handleFieldChange('tags', tags)}
+                  disabled={isFormBusy}
                 />
               </div>
             </div>
 
             {/* Content */}
-            <div className="border border-gray-200 p-4">
+            <div className={`border border-gray-200 p-4 ${isFormBusy ? 'opacity-60 pointer-events-none' : ''}`}>
               <h3 className="text-base font-medium text-black mb-4">Content</h3>
               <div>
                 <label className="block text-sm font-medium text-black mb-2">
@@ -487,12 +497,13 @@ export function EntryForm({ mode }: EntryFormProps) {
               </Button>
             </Link>
             {mode === 'edit' && (
-              <label className="flex items-center space-x-2 text-sm text-gray-500">
+              <label className={`flex items-center space-x-2 text-sm text-gray-500 ${isFormBusy ? 'opacity-40 cursor-not-allowed' : ''}`}>
                 <input
                   type="checkbox"
                   checked={updateTimestamp}
                   onChange={(e) => setUpdateTimestamp(e.target.checked)}
-                  className="border-gray-300 text-black focus:ring-black"
+                  disabled={isFormBusy}
+                  className="border-gray-300 text-black focus:ring-black disabled:cursor-not-allowed"
                 />
                 <span>Update timestamp</span>
               </label>
@@ -501,7 +512,7 @@ export function EntryForm({ mode }: EntryFormProps) {
           <div className="flex space-x-3">
             <Button
               type="submit"
-              disabled={!formData.title.trim() || !formData.content.trim()}
+              disabled={!formData.title.trim() || !formData.content.trim() || isFormBusy}
             >
               {mode === 'create' ? 'Preview & Create' : 'Preview & Update'}
             </Button>

@@ -32,23 +32,23 @@ export function TagInput({ label, value, onChange, placeholder = "Add tags and p
   return (
     <div>
       {label && (
-        <label htmlFor={inputId} className="block text-sm font-medium text-gray-700 mb-1">
+        <label htmlFor={inputId} className="block text-sm font-medium text-black mb-1">
           {label}
         </label>
       )}
-      <div className={`flex flex-wrap gap-2 p-2 border rounded-lg min-h-[2.5rem] ${error ? 'border-red-300' : 'border-gray-300'} focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-transparent`}>
+      <div className={`flex flex-wrap gap-2 p-2 border min-h-[2.5rem] ${error ? 'border-red-400' : 'border-gray-300'} focus-within:border-black transition-colors`}>
         {value.map((tag, index) => (
           <span
             key={index}
-            className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800"
+            className="inline-flex items-center px-2 py-1 text-xs font-medium bg-gray-100 text-black border border-gray-300"
           >
             {tag}
             <button
               type="button"
               onClick={() => removeTag(index)}
-              className="ml-1 text-blue-600 hover:text-blue-800 focus:outline-none"
+              className="ml-1 text-gray-500 hover:text-black focus:outline-none"
             >
-              ×
+              x
             </button>
           </span>
         ))}

@@ -62,31 +62,31 @@ export function DiffViewer({
   return (
     <div className="flex flex-col h-full">
       <div className="mb-4 flex-1 flex flex-col">
-        <div className="bg-gray-50 border rounded-lg p-4 flex-1 overflow-y-auto overflow-x-auto">
+        <div className="bg-gray-50 border border-gray-200 p-4 flex-1 overflow-y-auto overflow-x-auto">
           <div className="grid grid-cols-12 gap-0 text-xs font-mono min-w-max">
-            <div className="col-span-1 text-gray-500 font-bold">Line</div>
-            <div className="col-span-11 text-gray-500 font-bold">Content</div>
+            <div className="col-span-1 text-gray-500 font-medium">Line</div>
+            <div className="col-span-11 text-gray-500 font-medium">Content</div>
           </div>
-          
+
           {diffLines.map((line, index) => (
             <div
               key={index}
               className={`grid grid-cols-12 gap-0 text-xs font-mono py-1 min-w-max ${
                 line.type === 'added'
-                  ? 'bg-green-50 text-green-800'
+                  ? 'bg-green-50 text-green-700'
                   : line.type === 'deleted'
-                  ? 'bg-red-50 text-red-800'
-                  : 'text-gray-800'
+                  ? 'bg-red-50 text-red-700'
+                  : 'text-black'
               }`}
             >
-              <div className="col-span-1 text-gray-500">
+              <div className="col-span-1 text-gray-400">
                 {line.type === 'deleted' ? line.oldLine : line.type === 'added' ? line.newLine : line.oldLine}
               </div>
               <div className="col-span-11 whitespace-pre-wrap break-words overflow-hidden">
                 <span className="inline-block w-4">
                   {line.type === 'added' && <span className="text-green-600">+</span>}
                   {line.type === 'deleted' && <span className="text-red-600">-</span>}
-                  {line.type === 'unchanged' && <span className="text-gray-400">&nbsp;</span>}
+                  {line.type === 'unchanged' && <span className="text-gray-300">&nbsp;</span>}
                 </span>
                 {line.content || <span className="text-gray-400">(empty line)</span>}
               </div>
@@ -95,18 +95,18 @@ export function DiffViewer({
         </div>
       </div>
 
-      <div className="flex justify-end space-x-3 flex-shrink-0 pt-4">
+      <div className="flex justify-end space-x-3 flex-shrink-0 pt-4 border-t border-gray-200">
         <button
           onClick={onCancel}
           disabled={isLoading}
-          className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+          className="px-4 py-2 text-sm font-medium text-black bg-white border border-gray-300 hover:bg-gray-50 focus:outline-none disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
         >
           Back to Edit
         </button>
         <button
           onClick={onConfirm}
           disabled={isLoading}
-          className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-blue-400 disabled:cursor-not-allowed"
+          className="px-4 py-2 text-sm font-medium text-white bg-black hover:opacity-80 focus:outline-none disabled:opacity-40 disabled:cursor-not-allowed transition-opacity"
         >
           {isLoading ? 'Saving...' : 'Confirm & Save'}
         </button>

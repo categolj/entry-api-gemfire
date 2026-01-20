@@ -93,26 +93,26 @@ export function TenantSelector() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-white">
       <Header />
-      
-      <div className="flex items-center justify-center py-8 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-md w-full space-y-4">
+
+      <div className="flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-md w-full space-y-6">
           <div>
-            <h2 className="text-center text-2xl font-extrabold text-gray-900">
-              Select Tenant
+            <h2 className="text-xl font-bold text-black">
+              ## Select Tenant
             </h2>
-            <p className="mt-1 text-center text-sm text-gray-600">
+            <p className="mt-2 text-sm text-gray-500">
               Choose a tenant to manage entries
             </p>
           </div>
 
           {/* Authentication Section */}
-          <div className="bg-white shadow rounded-lg p-4">
-            <h3 className="text-lg font-medium text-gray-900 mb-3">Authentication</h3>
-            <div className="space-y-3">
+          <div className="border border-gray-200 p-6">
+            <h3 className="text-base font-medium text-black mb-4">Authentication</h3>
+            <div className="space-y-4">
               <div>
-                <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="username" className="block text-sm font-medium text-black mb-1">
                   Username
                 </label>
                 <input
@@ -130,11 +130,11 @@ export function TenantSelector() {
                     }
                   }}
                   placeholder="Enter username"
-                  className="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="appearance-none block w-full px-3 py-2 border border-gray-300 placeholder-gray-400 text-black focus:outline-none focus:border-black transition-colors"
                 />
               </div>
               <div>
-                <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="password" className="block text-sm font-medium text-black mb-1">
                   Password
                 </label>
                 <div className="relative">
@@ -153,12 +153,12 @@ export function TenantSelector() {
                       }
                     }}
                     placeholder="Enter password"
-                    className="appearance-none relative block w-full px-3 py-2 pr-10 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="appearance-none block w-full px-3 py-2 pr-10 border border-gray-300 placeholder-gray-400 text-black focus:outline-none focus:border-black transition-colors"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-500 hover:text-gray-700"
+                    className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-black"
                   >
                     {showPassword ? (
                       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
@@ -179,58 +179,56 @@ export function TenantSelector() {
             </div>
           </div>
 
-        <div className="mt-6 space-y-4">
-          {/* Default Tenant */}
-          <div className="space-y-3">
+          <div className="space-y-4">
+            {/* Default Tenant */}
             <button
               onClick={handleDefaultTenant}
               disabled={!username.trim() || !password.trim() || isAuthenticating}
-              className="w-full text-left p-4 border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors disabled:bg-gray-100 disabled:cursor-not-allowed disabled:text-gray-400"
+              className="w-full text-left p-4 border border-gray-300 hover:border-black focus:outline-none transition-colors disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:border-gray-300"
             >
-              <div className="font-medium text-gray-900">
+              <div className="font-medium text-black">
                 {isAuthenticating ? 'Authenticating...' : 'Default Tenant'}
               </div>
               <div className="text-sm text-gray-500 mt-1">Use the default tenant for general entries</div>
               <div className="text-xs text-gray-400 mt-1">Tenant ID: {DEFAULT_TENANT}</div>
             </button>
-          </div>
 
-          {/* OR Divider */}
-          <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-gray-300" />
-            </div>
-            <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-gray-50 text-gray-500">OR</span>
-            </div>
-          </div>
-
-          {/* Custom Tenant */}
-          <div className="space-y-3">
-            <h3 className="text-base font-medium text-gray-900">Custom Tenant</h3>
-            <form onSubmit={handleCustomTenantSubmit} className="space-y-3">
-              <div>
-                <label htmlFor="custom-tenant" className="block text-sm font-medium text-gray-700 mb-1">
-                  Tenant ID
-                </label>
-                <input
-                  id="custom-tenant"
-                  type="text"
-                  value={customTenant}
-                  onChange={(e) => setCustomTenant(e.target.value)}
-                  placeholder="Enter tenant ID (e.g., blog, docs, etc.)"
-                  className="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
+            {/* OR Divider */}
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-gray-200" />
               </div>
-              <button
-                type="submit"
-                disabled={!customTenant.trim() || !username.trim() || !password.trim() || isAuthenticating}
-                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
-              >
-                {isAuthenticating ? 'Authenticating...' : 'Access Custom Tenant'}
-              </button>
-            </form>
-          </div>
+              <div className="relative flex justify-center text-sm">
+                <span className="px-3 bg-white text-gray-400">OR</span>
+              </div>
+            </div>
+
+            {/* Custom Tenant */}
+            <div className="space-y-3">
+              <h3 className="text-base font-medium text-black">Custom Tenant</h3>
+              <form onSubmit={handleCustomTenantSubmit} className="space-y-3">
+                <div>
+                  <label htmlFor="custom-tenant" className="block text-sm font-medium text-black mb-1">
+                    Tenant ID
+                  </label>
+                  <input
+                    id="custom-tenant"
+                    type="text"
+                    value={customTenant}
+                    onChange={(e) => setCustomTenant(e.target.value)}
+                    placeholder="Enter tenant ID (e.g., blog, docs, etc.)"
+                    className="appearance-none block w-full px-3 py-2 border border-gray-300 placeholder-gray-400 text-black focus:outline-none focus:border-black transition-colors"
+                  />
+                </div>
+                <button
+                  type="submit"
+                  disabled={!customTenant.trim() || !username.trim() || !password.trim() || isAuthenticating}
+                  className="w-full py-2 px-4 text-sm font-medium text-white bg-black hover:opacity-80 focus:outline-none disabled:opacity-40 disabled:cursor-not-allowed transition-opacity"
+                >
+                  {isAuthenticating ? 'Authenticating...' : 'Access Custom Tenant'}
+                </button>
+              </form>
+            </div>
           </div>
         </div>
       </div>

@@ -146,36 +146,36 @@ export function EntryPreview() {
     : 'Review Changes';
 
   return (
-    <div className="px-4 py-3 sm:px-0">
+    <div>
       {/* Header */}
-      <div className="mb-4">
+      <div className="mb-6">
         <nav className="flex" aria-label="Breadcrumb">
-          <ol className="flex items-center space-x-3">
+          <ol className="flex items-center space-x-2 text-sm">
             <li>
-              <Link to={`/console/${tenant}`} className="text-gray-400 hover:text-gray-500 text-sm">
+              <Link to={`/console/${tenant}`} className="text-gray-500 hover:text-black">
                 Entries
               </Link>
             </li>
             <li>
-              <span className="text-gray-400">/</span>
+              <span className="text-gray-300">/</span>
             </li>
             <li>
               <button
                 onClick={handleBack}
-                className="text-gray-400 hover:text-gray-500 text-sm"
+                className="text-gray-500 hover:text-black"
               >
                 {state.mode === 'create' ? 'Create New Entry' : 'Edit Entry'}
               </button>
             </li>
             <li>
-              <span className="text-gray-400">/</span>
+              <span className="text-gray-300">/</span>
             </li>
             <li>
-              <span className="text-gray-500 text-sm">Preview</span>
+              <span className="text-gray-500">Preview</span>
             </li>
           </ol>
         </nav>
-        <h1 className="mt-1 text-xl font-bold text-gray-900">{title}</h1>
+        <h1 className="mt-2 text-xl font-bold text-black">## {title}</h1>
       </div>
 
       {/* Error Display */}
@@ -186,7 +186,7 @@ export function EntryPreview() {
       )}
 
       {/* Diff Viewer */}
-      <div className="bg-white shadow rounded-lg p-4 h-96">
+      <div className="border border-gray-200 p-4 h-96">
         <DiffViewer
           originalContent={originalMarkdown}
           newContent={getCurrentMarkdown()}

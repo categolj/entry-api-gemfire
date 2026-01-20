@@ -88,10 +88,10 @@ export function EntryDetail() {
 
   if (!entry) {
     return (
-      <div className="px-4 py-3 sm:px-0">
-        <div className="text-center">
-          <h1 className="text-xl font-bold text-gray-900">Entry not found</h1>
-          <Link to={`/console/${tenant}/entries`} className="mt-3 inline-block">
+      <div>
+        <div className="text-center py-12">
+          <h1 className="text-xl font-bold text-black">Entry not found</h1>
+          <Link to={`/console/${tenant}/entries`} className="mt-4 inline-block">
             <Button>Back to Entries</Button>
           </Link>
         </div>
@@ -100,106 +100,100 @@ export function EntryDetail() {
   }
 
   return (
-    <div className="px-4 py-3 sm:px-0">
+    <div>
       {/* Header */}
-      <div className="lg:flex lg:items-center lg:justify-between">
+      <div className="lg:flex lg:items-center lg:justify-between mb-8">
         <div className="flex-1 min-w-0">
           <nav className="flex" aria-label="Breadcrumb">
-            <ol className="flex items-center space-x-3">
+            <ol className="flex items-center space-x-2 text-sm">
               <li>
-                <Link to={`/console/${tenant}`} className="text-gray-400 hover:text-gray-500 text-sm">
+                <Link to={`/console/${tenant}`} className="text-gray-500 hover:text-black">
                   Entries
                 </Link>
               </li>
               <li>
-                <span className="text-gray-400">/</span>
+                <span className="text-gray-300">/</span>
               </li>
               <li>
-                <span className="text-gray-500 text-sm">Entry {entry.entryId}</span>
+                <span className="text-gray-500">Entry {entry.entryId}</span>
               </li>
             </ol>
           </nav>
-          <h1 className="mt-1 text-xl font-bold leading-6 text-gray-900 sm:text-2xl sm:truncate">
+          <h1 className="mt-2 text-xl font-bold text-black">
             {entry.frontMatter.title}
           </h1>
         </div>
-        <div className="mt-3 flex lg:mt-0 lg:ml-4">
-          <span className="hidden sm:block">
-            <Link to={`/console/${tenant}/entries/${entry.entryId}/edit`}>
-              <Button variant="secondary">Edit</Button>
-            </Link>
-          </span>
-          <span className="ml-3">
-            <Button
-              variant="danger"
-              onClick={() => setShowDeleteConfirm(true)}
-            >
-              Delete
-            </Button>
-          </span>
+        <div className="mt-4 flex lg:mt-0 lg:ml-4 space-x-3">
+          <Link to={`/console/${tenant}/entries/${entry.entryId}/edit`}>
+            <Button variant="secondary">Edit</Button>
+          </Link>
+          <Button
+            variant="danger"
+            onClick={() => setShowDeleteConfirm(true)}
+          >
+            Delete
+          </Button>
         </div>
       </div>
 
       {/* Entry Metadata */}
-      <div className="mt-4 bg-white shadow overflow-hidden sm:rounded-lg">
-        <div className="px-4 py-3 sm:px-6">
-          <h3 className="text-lg leading-6 font-medium text-gray-900">Entry Information</h3>
+      <div className="border border-gray-200 mb-6">
+        <div className="px-4 py-3 border-b border-gray-200">
+          <h3 className="text-base font-medium text-black">Entry Information</h3>
         </div>
-        <div className="border-t border-gray-200">
-          <dl className="divide-y divide-gray-200">
-            <div className="py-2 px-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-              <dt className="text-sm font-medium text-gray-500">Entry ID</dt>
-              <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{entry.entryId}</dd>
+        <dl className="divide-y divide-gray-100">
+          <div className="py-3 px-4 sm:grid sm:grid-cols-3 sm:gap-4">
+            <dt className="text-sm text-gray-500">Entry ID</dt>
+            <dd className="mt-1 text-sm text-black sm:mt-0 sm:col-span-2">{entry.entryId}</dd>
+          </div>
+          <div className="py-3 px-4 sm:grid sm:grid-cols-3 sm:gap-4">
+            <dt className="text-sm text-gray-500">Title</dt>
+            <dd className="mt-1 text-sm text-black sm:mt-0 sm:col-span-2">{entry.frontMatter.title}</dd>
+          </div>
+          {entry.frontMatter.summary && (
+            <div className="py-3 px-4 sm:grid sm:grid-cols-3 sm:gap-4">
+              <dt className="text-sm text-gray-500">Summary</dt>
+              <dd className="mt-1 text-sm text-black sm:mt-0 sm:col-span-2">{entry.frontMatter.summary}</dd>
             </div>
-            <div className="py-2 px-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-              <dt className="text-sm font-medium text-gray-500">Title</dt>
-              <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{entry.frontMatter.title}</dd>
-            </div>
-            {entry.frontMatter.summary && (
-              <div className="py-2 px-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                <dt className="text-sm font-medium text-gray-500">Summary</dt>
-                <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{entry.frontMatter.summary}</dd>
-              </div>
-            )}
-            {entry.frontMatter.categories.length > 0 && (
-              <div className="py-2 px-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                <dt className="text-sm font-medium text-gray-500">Categories</dt>
-                <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                  {formatCategories(entry.frontMatter.categories)}
-                </dd>
-              </div>
-            )}
-            {entry.frontMatter.tags.length > 0 && (
-              <div className="py-2 px-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                <dt className="text-sm font-medium text-gray-500">Tags</dt>
-                <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                  {formatTags(entry.frontMatter.tags)}
-                </dd>
-              </div>
-            )}
-            <div className="py-2 px-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-              <dt className="text-sm font-medium text-gray-500">Created</dt>
-              <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                {formatDate(entry.created.date)} by {entry.created.name}
+          )}
+          {entry.frontMatter.categories.length > 0 && (
+            <div className="py-3 px-4 sm:grid sm:grid-cols-3 sm:gap-4">
+              <dt className="text-sm text-gray-500">Categories</dt>
+              <dd className="mt-1 text-sm text-black sm:mt-0 sm:col-span-2">
+                {formatCategories(entry.frontMatter.categories)}
               </dd>
             </div>
-            <div className="py-2 px-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-              <dt className="text-sm font-medium text-gray-500">Last Updated</dt>
-              <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                {formatDate(entry.updated.date)} by {entry.updated.name}
+          )}
+          {entry.frontMatter.tags.length > 0 && (
+            <div className="py-3 px-4 sm:grid sm:grid-cols-3 sm:gap-4">
+              <dt className="text-sm text-gray-500">Tags</dt>
+              <dd className="mt-1 text-sm text-black sm:mt-0 sm:col-span-2">
+                {formatTags(entry.frontMatter.tags)}
               </dd>
             </div>
-          </dl>
-        </div>
+          )}
+          <div className="py-3 px-4 sm:grid sm:grid-cols-3 sm:gap-4">
+            <dt className="text-sm text-gray-500">Created</dt>
+            <dd className="mt-1 text-sm text-black sm:mt-0 sm:col-span-2">
+              {formatDate(entry.created.date)} by {entry.created.name}
+            </dd>
+          </div>
+          <div className="py-3 px-4 sm:grid sm:grid-cols-3 sm:gap-4">
+            <dt className="text-sm text-gray-500">Last Updated</dt>
+            <dd className="mt-1 text-sm text-black sm:mt-0 sm:col-span-2">
+              {formatDate(entry.updated.date)} by {entry.updated.name}
+            </dd>
+          </div>
+        </dl>
       </div>
 
       {/* Entry Content */}
-      <div className="mt-4 bg-white shadow overflow-hidden sm:rounded-lg">
-        <div className="px-4 py-3 sm:px-6">
-          <h3 className="text-lg leading-6 font-medium text-gray-900">Content</h3>
+      <div className="border border-gray-200">
+        <div className="px-4 py-3 border-b border-gray-200">
+          <h3 className="text-base font-medium text-black">Content</h3>
         </div>
-        <div className="border-t border-gray-200 px-4 py-3 sm:p-4">
-          <pre className="whitespace-pre-wrap text-sm text-gray-900 font-mono bg-gray-50 p-3 rounded-lg">
+        <div className="px-4 py-4">
+          <pre className="whitespace-pre-wrap text-sm text-black font-mono bg-gray-50 p-4 border border-gray-200">
             {entry.content}
           </pre>
         </div>
@@ -207,16 +201,16 @@ export function EntryDetail() {
 
       {/* Delete Confirmation Modal */}
       {showDeleteConfirm && (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-            <div className="mt-3 text-center">
-              <h3 className="text-lg font-medium text-gray-900">Delete Entry</h3>
-              <div className="mt-2 px-7 py-3">
+        <div className="fixed inset-0 bg-black bg-opacity-30 overflow-y-auto h-full w-full z-50">
+          <div className="relative top-20 mx-auto p-6 border border-gray-200 w-96 bg-white">
+            <div className="text-center">
+              <h3 className="text-lg font-medium text-black">Delete Entry</h3>
+              <div className="mt-4 mb-6">
                 <p className="text-sm text-gray-500">
                   Are you sure you want to delete this entry? This action cannot be undone.
                 </p>
               </div>
-              <div className="flex justify-center space-x-4 mt-4">
+              <div className="flex justify-center space-x-4">
                 <Button
                   variant="secondary"
                   onClick={() => setShowDeleteConfirm(false)}

@@ -2,10 +2,10 @@ import React from 'react';
 
 interface LoadingSpinnerProps {
   size?: 'sm' | 'md' | 'lg';
-  color?: 'blue' | 'gray' | 'white';
+  color?: 'black' | 'gray' | 'white';
 }
 
-export function LoadingSpinner({ size = 'md', color = 'blue' }: LoadingSpinnerProps) {
+export function LoadingSpinner({ size = 'md', color = 'black' }: LoadingSpinnerProps) {
   const sizeClasses = {
     sm: 'h-4 w-4',
     md: 'h-8 w-8',
@@ -13,8 +13,8 @@ export function LoadingSpinner({ size = 'md', color = 'blue' }: LoadingSpinnerPr
   };
 
   const colorClasses = {
-    blue: 'text-blue-600',
-    gray: 'text-gray-600',
+    black: 'text-black',
+    gray: 'text-gray-500',
     white: 'text-white',
   };
 

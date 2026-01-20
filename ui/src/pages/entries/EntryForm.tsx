@@ -222,43 +222,43 @@ export function EntryForm({ mode }: EntryFormProps) {
   }
 
   return (
-    <div className="px-4 py-3 sm:px-0">
+    <div>
       {/* Header */}
-      <div className="mb-4">
+      <div className="mb-6">
         <nav className="flex" aria-label="Breadcrumb">
-          <ol className="flex items-center space-x-3">
+          <ol className="flex items-center space-x-2 text-sm">
             <li>
-              <Link to={`/console/${tenant}`} className="text-gray-400 hover:text-gray-500 text-sm">
+              <Link to={`/console/${tenant}`} className="text-gray-500 hover:text-black">
                 Entries
               </Link>
             </li>
             <li>
-              <span className="text-gray-400">/</span>
+              <span className="text-gray-300">/</span>
             </li>
             <li>
-              <span className="text-gray-500 text-sm">
+              <span className="text-gray-500">
                 {mode === 'create' ? 'Create New Entry' : `Edit Entry ${entryId}`}
               </span>
             </li>
           </ol>
         </nav>
-        <h1 className="mt-1 text-xl font-bold text-gray-900">
-          {mode === 'create' ? 'Create New Entry' : 'Edit Entry'}
+        <h1 className="mt-2 text-xl font-bold text-black">
+          {mode === 'create' ? '## Create New Entry' : '## Edit Entry'}
         </h1>
       </div>
 
       {/* Mode Toggle */}
-      <div className="mb-4 bg-white shadow rounded-lg p-3">
+      <div className="mb-6 border border-gray-200 p-4">
         <div className="flex items-center space-x-4">
-          <span className="text-sm font-medium text-gray-700">Edit Mode:</span>
-          <div className="flex rounded-lg border border-gray-300">
+          <span className="text-sm font-medium text-black">Edit Mode:</span>
+          <div className="flex border border-gray-300">
             <button
               type="button"
               onClick={() => setMarkdownMode(false)}
-              className={`px-4 py-2 text-sm font-medium rounded-l-lg ${
+              className={`px-4 py-2 text-sm font-medium ${
                 !markdownMode
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-white text-gray-700 hover:bg-gray-50'
+                  ? 'bg-black text-white'
+                  : 'bg-white text-black hover:bg-gray-50'
               }`}
             >
               Form Editor
@@ -277,10 +277,10 @@ export function EntryForm({ mode }: EntryFormProps) {
                   setMarkdownContent(createMarkdownWithFrontMatter(frontMatter, formData.content));
                 }
               }}
-              className={`px-4 py-2 text-sm font-medium rounded-r-lg border-l border-gray-300 ${
+              className={`px-4 py-2 text-sm font-medium border-l border-gray-300 ${
                 markdownMode
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-white text-gray-700 hover:bg-gray-50'
+                  ? 'bg-black text-white'
+                  : 'bg-white text-black hover:bg-gray-50'
               }`}
             >
               Markdown Editor
@@ -296,13 +296,13 @@ export function EntryForm({ mode }: EntryFormProps) {
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-6">
         {markdownMode ? (
           /* Markdown Editor */
           <>
             {mode === 'create' && (
-              <div className="bg-white shadow rounded-lg p-4 mb-4">
-                <h3 className="text-lg font-medium text-gray-900 mb-3">Entry ID</h3>
+              <div className="border border-gray-200 p-4 mb-4">
+                <h3 className="text-base font-medium text-black mb-3">Entry ID</h3>
                 <div className="flex items-end space-x-2">
                   <div className="w-80">
                     <Input
@@ -331,9 +331,9 @@ export function EntryForm({ mode }: EntryFormProps) {
                 </div>
               </div>
             )}
-            <div className="bg-white shadow rounded-lg p-4">
+            <div className="border border-gray-200 p-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-black mb-2">
                   Markdown Content
                 </label>
                 <MDEditor
@@ -353,9 +353,9 @@ export function EntryForm({ mode }: EntryFormProps) {
           /* Form Editor */
           <>
             {/* Basic Information */}
-            <div className="bg-white shadow rounded-lg p-4">
-              <h3 className="text-lg font-medium text-gray-900 mb-3">Basic Information</h3>
-              <div className="space-y-3">
+            <div className="border border-gray-200 p-4">
+              <h3 className="text-base font-medium text-black mb-4">Basic Information</h3>
+              <div className="space-y-4">
                 <Input
                   label="Title *"
                   type="text"
@@ -403,9 +403,9 @@ export function EntryForm({ mode }: EntryFormProps) {
             </div>
 
             {/* Categories and Tags */}
-            <div className="bg-white shadow rounded-lg p-4">
-              <h3 className="text-lg font-medium text-gray-900 mb-2">Categories and Tags</h3>
-              <p className="text-sm text-gray-600 mb-3">
+            <div className="border border-gray-200 p-4">
+              <h3 className="text-base font-medium text-black mb-2">Categories and Tags</h3>
+              <p className="text-sm text-gray-500 mb-4">
                 Organize your entry with categories and tags for better discoverability.
               </p>
               <div className="space-y-4">
@@ -423,10 +423,10 @@ export function EntryForm({ mode }: EntryFormProps) {
             </div>
 
             {/* Content */}
-            <div className="bg-white shadow rounded-lg p-4">
-              <h3 className="text-lg font-medium text-gray-900 mb-3">Content</h3>
+            <div className="border border-gray-200 p-4">
+              <h3 className="text-base font-medium text-black mb-4">Content</h3>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-black mb-2">
                   Markdown Content *
                 </label>
                 <MDEditor
@@ -445,7 +445,7 @@ export function EntryForm({ mode }: EntryFormProps) {
         )}
 
         {/* Actions */}
-        <div className="flex justify-between items-center">
+        <div className="flex justify-between items-center pt-4 border-t border-gray-200">
           <div className="flex items-center space-x-4">
             <Link to={`/console/${tenant}`}>
               <Button variant="secondary" type="button">
@@ -453,12 +453,12 @@ export function EntryForm({ mode }: EntryFormProps) {
               </Button>
             </Link>
             {mode === 'edit' && (
-              <label className="flex items-center space-x-2 text-sm text-gray-600">
+              <label className="flex items-center space-x-2 text-sm text-gray-500">
                 <input
                   type="checkbox"
                   checked={updateTimestamp}
                   onChange={(e) => setUpdateTimestamp(e.target.checked)}
-                  className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                  className="border-gray-300 text-black focus:ring-black"
                 />
                 <span>Update timestamp</span>
               </label>

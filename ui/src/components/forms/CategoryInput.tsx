@@ -30,7 +30,6 @@ export function CategoryInput({ label, value, onChange, placeholder = "Add categ
     }
   };
 
-
   const handleButtonClick = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -45,30 +44,30 @@ export function CategoryInput({ label, value, onChange, placeholder = "Add categ
   return (
     <div>
       {label && (
-        <label htmlFor={inputId} className="block text-sm font-medium text-gray-700 mb-1">
+        <label htmlFor={inputId} className="block text-sm font-medium text-black mb-1">
           {label}
         </label>
       )}
-      
+
       {/* Existing categories */}
       {value.length > 0 && (
         <div className="mb-3">
           <div className="flex flex-wrap items-center gap-1">
             {value.map((category, index) => (
               <React.Fragment key={index}>
-                <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-purple-100 text-purple-800">
+                <span className="inline-flex items-center px-3 py-1 text-sm font-medium bg-gray-100 text-black border border-gray-300">
                   {category}
                   <button
                     type="button"
                     onClick={() => removeCategory(index)}
-                    className="ml-2 text-purple-600 hover:text-purple-800 focus:outline-none"
+                    className="ml-2 text-gray-500 hover:text-black focus:outline-none"
                     title="Remove category"
                   >
-                    ×
+                    x
                   </button>
                 </span>
                 {index < value.length - 1 && (
-                  <span className="text-purple-600 font-medium text-sm">
+                  <span className="text-gray-500 font-medium text-sm">
                     {'>'}
                   </span>
                 )}
@@ -93,18 +92,18 @@ export function CategoryInput({ label, value, onChange, placeholder = "Add categ
             }
           }}
           placeholder={placeholder}
-          className={`flex-1 px-3 py-2 border rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${error ? 'border-red-300' : 'border-gray-300'}`}
+          className={`flex-1 px-3 py-2 border placeholder-gray-400 focus:outline-none focus:border-black transition-colors ${error ? 'border-red-400' : 'border-gray-300'}`}
         />
         <button
           type="button"
           onClick={handleButtonClick}
           disabled={!inputValue.trim()}
-          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-400 disabled:cursor-not-allowed"
+          className="px-4 py-2 bg-black text-white hover:opacity-80 focus:outline-none disabled:opacity-40 disabled:cursor-not-allowed transition-opacity"
         >
           Add
         </button>
       </div>
-      
+
       {error && <p className="mt-1 text-sm text-red-600">{error}</p>}
     </div>
   );

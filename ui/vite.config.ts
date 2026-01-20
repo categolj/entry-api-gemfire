@@ -7,7 +7,7 @@ export default defineConfig({
   server: {
     proxy: {
       '/tenants': {
-        target: 'https://entry-api.ik.am',
+        target: 'http://localhost:8080',
         changeOrigin: true,
         secure: false,
       },

@@ -1,3 +1,14 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Entry card hover effect */
+.entry-card {
+  border-left: 4px solid #d1d5db; /* gray-300 */
+  transition: border-color 0.15s ease-in-out, background-color 0.15s ease-in-out;
+}
+
+.entry-card:hover {
+  border-left-color: #f59e0b; /* amber-500 */
+  background-color: #f9fafb; /* gray-50 */
+}

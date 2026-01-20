@@ -8,11 +8,11 @@ interface ErrorAlertProps {
 
 export function ErrorAlert({ title = 'Error', message, onDismiss }: ErrorAlertProps) {
   return (
-    <div className="rounded-md bg-red-50 p-4 mb-4">
+    <div className="border border-red-300 bg-white p-4 mb-4">
       <div className="flex">
         <div className="flex-shrink-0">
           <svg
-            className="h-5 w-5 text-red-400"
+            className="h-5 w-5 text-red-500"
             fill="currentColor"
             viewBox="0 0 20 20"
           >
@@ -24,29 +24,27 @@ export function ErrorAlert({ title = 'Error', message, onDismiss }: ErrorAlertPr
           </svg>
         </div>
         <div className="ml-3 flex-1">
-          <h3 className="text-sm font-medium text-red-800">{title}</h3>
-          <div className="mt-2 text-sm text-red-700">
+          <h3 className="text-sm font-medium text-red-600">{title}</h3>
+          <div className="mt-1 text-sm text-gray-600">
             <p>{message}</p>
           </div>
         </div>
         {onDismiss && (
           <div className="ml-auto pl-3">
-            <div className="-mx-1.5 -my-1.5">
-              <button
-                type="button"
-                onClick={onDismiss}
-                className="inline-flex rounded-md bg-red-50 p-1.5 text-red-500 hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-red-600 focus:ring-offset-2 focus:ring-offset-red-50"
-              >
-                <span className="sr-only">Dismiss</span>
-                <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
-                  <path
-                    fillRule="evenodd"
-                    d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-              </button>
-            </div>
+            <button
+              type="button"
+              onClick={onDismiss}
+              className="text-gray-400 hover:text-black focus:outline-none"
+            >
+              <span className="sr-only">Dismiss</span>
+              <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+                <path
+                  fillRule="evenodd"
+                  d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                  clipRule="evenodd"
+                />
+              </svg>
+            </button>
           </div>
         )}
       </div>

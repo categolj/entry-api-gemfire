@@ -34,6 +34,8 @@ public class GitHubProps implements Validator {
 
 	private Duration readTimeout = Duration.ofSeconds(5);
 
+	private boolean directUpdate = false;
+
 	private final Validator validator = Validator.forInstanceOf(GitHubProps.class, ValidatorBuilder.<GitHubProps>of()
 		.constraint(GitHubProps::getApiUrl, "apiUrl", c -> c.notBlank().url())
 		.constraint(GitHubProps::getAccessToken, "accessToken", c -> c.codePoints(ASCII_PRINTABLE_CHARS).asWhiteList())
@@ -135,6 +137,14 @@ public class GitHubProps implements Validator {
 
 	public void setReadTimeout(Duration readTimeout) {
 		this.readTimeout = readTimeout;
+	}
+
+	public boolean isDirectUpdate() {
+		return directUpdate;
+	}
+
+	public void setDirectUpdate(boolean directUpdate) {
+		this.directUpdate = directUpdate;
 	}
 
 	@Override

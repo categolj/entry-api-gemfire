@@ -7,11 +7,6 @@ import am.ik.blog.tenant.RequestTenantAuthorizationManager;
 import am.ik.blog.tenant.TenantUserDetails;
 import am.ik.blog.tenant.TenantUserDetailsService;
 import am.ik.blog.tenant.TenantUserProps;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.stream.Stream;
 import org.jspecify.annotations.Nullable;
 import org.springframework.aop.Advisor;
 import org.springframework.aot.hint.ExecutableMode;
@@ -39,6 +34,12 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.util.ReflectionUtils;
+
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Stream;
 
 @Configuration(proxyBeanMethods = false)
 @Role(BeanDefinition.ROLE_INFRASTRUCTURE)

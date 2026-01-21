@@ -176,6 +176,10 @@
       </exclusions>
     </dependency>
     <dependency>
+      <groupId>io.awspring.cloud</groupId>
+      <artifactId>spring-cloud-aws-starter-s3</artifactId>
+    </dependency>
+    <dependency>
       <groupId>am.ik.pagination</groupId>
       <artifactId>pagination</artifactId>
       <version>0.2.0</version>
@@ -265,6 +269,13 @@
         <groupId>org.springframework.ai</groupId>
         <artifactId>spring-ai-bom</artifactId>
         <version>2.0.0-M1</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+      <dependency>
+        <groupId>io.awspring.cloud</groupId>
+        <artifactId>spring-cloud-aws-dependencies</artifactId>
+        <version>4.0.0-RC1</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>

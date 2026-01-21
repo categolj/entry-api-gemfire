@@ -224,6 +224,7 @@ public class EntryController {
 				.categories(new Category("Programming"), new Category("Java"), new Category("Spring"))
 				.tags(new Tag("Java"), new Tag("Spring Boot"), new Tag("Tutorial"))
 				.build())
+			.entryKey(EntryKey.builder().entryId(0L).build())
 			.created(Author.builder().name("system").build())
 			.updated(Author.builder().name("system").build())
 			.build()

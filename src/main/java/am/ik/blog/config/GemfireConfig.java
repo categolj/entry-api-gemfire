@@ -2,7 +2,6 @@ package am.ik.blog.config;
 
 import am.ik.blog.GemfireProps;
 import am.ik.blog.entry.gemfire.EntryEntity;
-import java.util.Properties;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.client.ClientCache;
@@ -12,8 +11,12 @@ import org.apache.geode.cache.client.proxy.ProxySocketFactories;
 import org.apache.geode.pdx.ReflectionBasedAutoSerializer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
+
+import java.util.Properties;
 
 @Configuration(proxyBeanMethods = false)
+@Profile("!mock")
 class GemfireConfig {
 
 	@Bean

@@ -237,6 +237,14 @@ export const api = {
     const result = await handleResponse<{ summary: string }>(response);
     return result.summary;
   },
+
+  // Template operations
+  async getTemplate(): Promise<string> {
+    const response = await fetch('/entries/template.md', {
+      headers: buildHeaders(),
+    });
+    return handleResponse<string>(response);
+  },
 };
 
 export { ApiError };

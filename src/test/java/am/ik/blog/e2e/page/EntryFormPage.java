@@ -119,9 +119,11 @@ public class EntryFormPage extends BasePage {
 	 * Click the Load button to load an existing entry.
 	 */
 	public EntryFormPage clickLoad() {
-		page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Load")).click();
+		page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Load").setExact(true)).click();
 		// Wait for loading to complete (button becomes enabled again)
-		page.locator("button:has-text('Load'):not([disabled])").waitFor();
+		page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Load").setExact(true))
+			.and(page.locator(":not([disabled])"))
+			.waitFor();
 		return this;
 	}
 
@@ -141,6 +143,16 @@ public class EntryFormPage extends BasePage {
 	public EntryFormPage loadExistingEntry(String entryId) {
 		fillEntryId(entryId);
 		return clickLoad();
+	}
+
+	/**
+	 * Click the Load Template button to load the template.
+	 */
+	public EntryFormPage clickLoadTemplate() {
+		page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Load Template")).click();
+		// Wait for loading to complete (button becomes enabled again)
+		page.locator("button:has-text('Load Template'):not([disabled])").waitFor();
+		return this;
 	}
 
 	/**

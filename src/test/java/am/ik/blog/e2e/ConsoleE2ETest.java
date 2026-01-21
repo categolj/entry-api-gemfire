@@ -294,6 +294,23 @@ class ConsoleE2ETest {
 		formPage.verifyErrorContainsStatusCode(500);
 	}
 
+	@Test
+	void loadTemplateInCreateMode() {
+		// Login and navigate to create entry form
+		EntryListPage entryListPage = login();
+		entryListPage.waitForLoad();
+
+		EntryFormPage formPage = entryListPage.clickNewEntry();
+		formPage.waitForLoad();
+		formPage.verifyCreatePageDisplayed();
+
+		// Click Load Template button
+		formPage.clickLoadTemplate();
+
+		// Verify the form is populated with template data
+		formPage.verifyTitle("How to Build a REST API with Spring Boot");
+	}
+
 	void setupOpenAiMock(String summaryText) {
 		String sseResponse = """
 				data: {"id":"chatcmpl-123","object":"chat.completion.chunk","created":1234567890,"model":"gpt-4o-mini","choices":[{"index":0,"delta":{"role":"assistant","content":""},"finish_reason":null}]}

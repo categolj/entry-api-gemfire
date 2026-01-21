@@ -38,8 +38,9 @@ export function EntryForm({ mode }: EntryFormProps) {
   const [isRestoredFromDraft, setIsRestoredFromDraft] = useState(false);
   const [isLoadingExisting, setIsLoadingExisting] = useState(false);
   const [isSummarizing, setIsSummarizing] = useState(false);
+  const [isLoadingTemplate, setIsLoadingTemplate] = useState(false);
 
-  const isFormBusy = isLoadingExisting || isSummarizing;
+  const isFormBusy = isLoadingExisting || isSummarizing || isLoadingTemplate;
 
   // Load existing entry for edit mode
   const {
@@ -286,6 +287,33 @@ export function EntryForm({ mode }: EntryFormProps) {
     }
   };
 
+  const handleLoadTemplate = async () => {
+    setIsLoadingTemplate(true);
+    setSubmitError(null);
+
+    try {
+      const templateMarkdown = await api.getTemplate();
+      const { frontMatter, content } = parseMarkdownWithFrontMatter(templateMarkdown);
+      setFormData({
+        title: frontMatter.title || '',
+        summary: frontMatter.summary || '',
+        categories: frontMatter.categories?.map(c => c.name) || [],
+        tags: frontMatter.tags?.map(t => t.name) || [],
+        content: content || '',
+      });
+      setMarkdownContent(templateMarkdown);
+    } catch (error) {
+      if (error instanceof ApiError) {
+        const detail = error.problemDetail?.detail || error.message;
+        setSubmitError(`HTTP ${error.status}: ${detail}`);
+      } else {
+        setSubmitError(error instanceof Error ? error.message : 'Failed to load template');
+      }
+    } finally {
+      setIsLoadingTemplate(false);
+    }
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitError(null);
@@ -474,7 +502,21 @@ export function EntryForm({ mode }: EntryFormProps) {
           <>
             {/* Basic Information */}
             <div className="border border-gray-200 p-4">
-              <h3 className="text-base font-medium text-black mb-4">Basic Information</h3>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-base font-medium text-black">Basic Information</h3>
+                {mode === 'create' && (
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => void handleLoadTemplate()}
+                    disabled={isFormBusy}
+                    loading={isLoadingTemplate}
+                  >
+                    Load Template
+                  </Button>
+                )}
+              </div>
               <div className="space-y-4">
                 <Input
                   label="Title *"

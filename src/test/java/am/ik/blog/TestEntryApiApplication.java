@@ -1,9 +1,10 @@
 package am.ik.blog;
 
+import org.springframework.boot.SpringApplication;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import org.springframework.boot.SpringApplication;
 
 public class TestEntryApiApplication {
 
@@ -12,6 +13,7 @@ public class TestEntryApiApplication {
 		newArgs.add("--spring.docker.compose.enabled=false");
 		SpringApplication.from(EntryApiApplication::main)
 			.with(TestcontainersConfiguration.class)
+			.with(S3TestcontainersConfiguration.class)
 			.run(newArgs.toArray(String[]::new));
 	}
 

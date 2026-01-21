@@ -245,6 +245,20 @@ export const api = {
     });
     return handleResponse<string>(response);
   },
+
+  // S3 operations
+  async getPresignedUrl(tenantId: string, fileName: string): Promise<string> {
+    const response = await fetch(buildUrl(tenantId, '/s3/presign'), {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...buildHeaders(),
+      },
+      body: JSON.stringify({ fileName }),
+    });
+    const result = await handleResponse<{ url: string }>(response);
+    return result.url;
+  },
 };
 
 export { ApiError };

@@ -1,6 +1,7 @@
 package am.ik.blog.e2e;
 
 import am.ik.blog.MockConfig;
+import am.ik.blog.S3TestcontainersConfiguration;
 import am.ik.blog.TestcontainersConfiguration;
 import am.ik.blog.e2e.page.EntryDetailPage;
 import am.ik.blog.e2e.page.EntryFormPage;
@@ -24,8 +25,13 @@ import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.context.annotation.Import;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+
 @Testcontainers(disabledWithoutDocker = true)
-@Import({ TestcontainersConfiguration.class, MockConfig.class })
+@Import({ TestcontainersConfiguration.class, S3TestcontainersConfiguration.class, MockConfig.class })
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class ConsoleE2ETest {
 
@@ -344,6 +350,66 @@ class ConsoleE2ETest {
 					.contentType("application/json")
 					.body(errorResponse)
 					.build());
+	}
+
+	@Test
+	void uploadImageByDragAndDrop() throws IOException {
+		// Login and navigate to create entry form
+		EntryListPage entryListPage = login();
+		entryListPage.waitForLoad();
+
+		EntryFormPage formPage = entryListPage.clickNewEntry();
+		formPage.waitForLoad();
+		formPage.verifyCreatePageDisplayed();
+
+		// Fill in title and content first
+		formPage.fillTitle("Test with Image").fillContent("Here is an image:");
+
+		// Create test PNG image
+		byte[] imageData = createTestPngImage();
+
+		// Drop image onto the editor
+		formPage.dropImageFile(imageData, "test-image.png", "image/png");
+
+		// Wait for upload to complete
+		formPage.waitForUploadComplete();
+
+		// Verify that image markdown is inserted into content
+		formPage.verifyContentContainsImageMarkdown();
+	}
+
+	@Test
+	void uploadInvalidFileTypeShowsError() {
+		// Login and navigate to create entry form
+		EntryListPage entryListPage = login();
+		entryListPage.waitForLoad();
+
+		EntryFormPage formPage = entryListPage.clickNewEntry();
+		formPage.waitForLoad();
+		formPage.verifyCreatePageDisplayed();
+
+		// Fill in title and content
+		formPage.fillTitle("Test Entry").fillContent("Some content");
+
+		// Try to drop an invalid file type (txt)
+		byte[] txtContent = "This is not an image".getBytes();
+		formPage.dropImageFile(txtContent, "test.txt", "text/plain");
+
+		// Verify error message is displayed
+		formPage.verifyUploadError("Invalid file type");
+	}
+
+	private byte[] createTestPngImage() throws IOException {
+		BufferedImage image = new BufferedImage(10, 10, BufferedImage.TYPE_INT_RGB);
+		// Fill with a simple color pattern
+		for (int x = 0; x < 10; x++) {
+			for (int y = 0; y < 10; y++) {
+				image.setRGB(x, y, (x * 25) << 16 | (y * 25) << 8 | 128);
+			}
+		}
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		ImageIO.write(image, "png", baos);
+		return baos.toByteArray();
 	}
 
 }

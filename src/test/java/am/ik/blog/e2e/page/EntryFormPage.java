@@ -1,8 +1,12 @@
 package am.ik.blog.e2e.page;
 
+import java.util.Arrays;
+import java.util.Base64;
+
 import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.Page;
 import com.microsoft.playwright.options.AriaRole;
+import com.microsoft.playwright.options.WaitForSelectorState;
 
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
 
@@ -252,6 +256,70 @@ public class EntryFormPage extends BasePage {
 	 */
 	public EntryFormPage verifyErrorContainsStatusCode(int statusCode) {
 		assertThat(page.locator("[role='alert']")).containsText("HTTP " + statusCode);
+		return this;
+	}
+
+	/**
+	 * Simulate dropping an image file onto the MDEditor.
+	 * @param imageData the image data as byte array
+	 * @param fileName the file name
+	 * @param mimeType the MIME type (e.g., "image/png")
+	 * @return this page object for chaining
+	 */
+	public EntryFormPage dropImageFile(byte[] imageData, String fileName, String mimeType) {
+		String base64Content = Base64.getEncoder().encodeToString(imageData);
+		page.evaluate("""
+				([base64, name, type]) => {
+				    const byteString = atob(base64);
+				    const ab = new ArrayBuffer(byteString.length);
+				    const ia = new Uint8Array(ab);
+				    for (let i = 0; i < byteString.length; i++) {
+				        ia[i] = byteString.charCodeAt(i);
+				    }
+				    const file = new File([ab], name, { type: type });
+				    const dataTransfer = new DataTransfer();
+				    dataTransfer.items.add(file);
+				    const dropEvent = new DragEvent('drop', {
+				        bubbles: true,
+				        cancelable: true,
+				        dataTransfer: dataTransfer
+				    });
+				    document.querySelector('.w-md-editor').dispatchEvent(dropEvent);
+				}
+				""", Arrays.asList(base64Content, fileName, mimeType));
+		return this;
+	}
+
+	/**
+	 * Wait for the image upload to complete.
+	 * @return this page object for chaining
+	 */
+	public EntryFormPage waitForUploadComplete() {
+		// Wait for uploading indicator to disappear
+		page.locator("text=Uploading image...")
+			.waitFor(new Locator.WaitForOptions().setState(WaitForSelectorState.HIDDEN));
+		return this;
+	}
+
+	/**
+	 * Verify that the content contains an image markdown syntax.
+	 * @return this page object for chaining
+	 */
+	public EntryFormPage verifyContentContainsImageMarkdown() {
+		Locator contentEditor = page.locator(".w-md-editor-text-input");
+		String content = contentEditor.inputValue();
+		assertThat(page.locator(".w-md-editor-text-input"))
+			.hasValue(java.util.regex.Pattern.compile("!\\[.*?\\]\\(.*?\\)"));
+		return this;
+	}
+
+	/**
+	 * Verify that the upload error message is displayed.
+	 * @param expectedText the expected error text
+	 * @return this page object for chaining
+	 */
+	public EntryFormPage verifyUploadError(String expectedText) {
+		assertThat(page.locator("[role='alert']")).containsText(expectedText);
 		return this;
 	}
 

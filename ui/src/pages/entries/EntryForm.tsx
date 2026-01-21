@@ -1,10 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, useParams, Link, useLocation } from 'react-router-dom';
-import MDEditor from '@uiw/react-md-editor';
 import { useTenant, useApi, useDraft } from '../../hooks';
 import { api, ApiError } from '../../services';
 import { LoadingSpinner, ErrorAlert, Button, DraftBanner } from '../../components/common';
-import { Input, Textarea, TagInput, CategoryInput } from '../../components/forms';
+import { Input, Textarea, TagInput, CategoryInput, ImageDropEditor } from '../../components/forms';
 import { FrontMatter, PreviewState } from '../../types';
 import { parseMarkdownWithFrontMatter, createMarkdownWithFrontMatter } from '../../utils';
 
@@ -39,6 +38,7 @@ export function EntryForm({ mode }: EntryFormProps) {
   const [isLoadingExisting, setIsLoadingExisting] = useState(false);
   const [isSummarizing, setIsSummarizing] = useState(false);
   const [isLoadingTemplate, setIsLoadingTemplate] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
 
   const isFormBusy = isLoadingExisting || isSummarizing || isLoadingTemplate;
 
@@ -434,6 +434,13 @@ export function EntryForm({ mode }: EntryFormProps) {
         </div>
       )}
 
+      {/* Upload Error Display */}
+      {uploadError && (
+        <div className="mb-4">
+          <ErrorAlert message={uploadError} onDismiss={() => setUploadError(null)} />
+        </div>
+      )}
+
       {/* Draft Restored Banner */}
       {draft.status === 'restored' && draft.restoredAt && (
         <DraftBanner
@@ -484,16 +491,16 @@ export function EntryForm({ mode }: EntryFormProps) {
                 <label className="block text-sm font-medium text-black mb-2">
                   Markdown Content
                 </label>
-                <MDEditor
+                <ImageDropEditor
                   value={markdownContent}
-                  onChange={(val) => handleMarkdownChange(val || '')}
-                  preview="live"
+                  onChange={handleMarkdownChange}
                   height={600}
-                  data-color-mode="light"
+                  tenantId={tenant}
+                  onUploadError={setUploadError}
                 />
               </div>
               <p className="mt-2 text-sm text-gray-500">
-                Edit the complete entry including front matter and content in markdown format with live preview.
+                Edit the complete entry including front matter and content in markdown format with live preview. Drag and drop images to upload.
               </p>
             </div>
           </>
@@ -610,16 +617,16 @@ export function EntryForm({ mode }: EntryFormProps) {
                 <label className="block text-sm font-medium text-black mb-2">
                   Markdown Content *
                 </label>
-                <MDEditor
+                <ImageDropEditor
                   value={formData.content}
-                  onChange={(val) => handleFieldChange('content', val || '')}
-                  preview="live"
+                  onChange={(val) => handleFieldChange('content', val)}
                   height={400}
-                  data-color-mode="light"
+                  tenantId={tenant}
+                  onUploadError={setUploadError}
                 />
               </div>
               <p className="mt-2 text-sm text-gray-500">
-                Write your content using Markdown syntax with live preview.
+                Write your content using Markdown syntax with live preview. Drag and drop images to upload.
               </p>
             </div>
           </>

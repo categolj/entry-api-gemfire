@@ -35,6 +35,7 @@ export function EntryForm({ mode }: EntryFormProps) {
   const [updateTimestamp, setUpdateTimestamp] = useState(false);
   const [originalMarkdown, setOriginalMarkdown] = useState('');
   const [isRestoredFromPreview, setIsRestoredFromPreview] = useState(false);
+  const [isRestoredFromDraft, setIsRestoredFromDraft] = useState(false);
   const [isLoadingExisting, setIsLoadingExisting] = useState(false);
   const [isSummarizing, setIsSummarizing] = useState(false);
 
@@ -78,9 +79,9 @@ export function EntryForm({ mode }: EntryFormProps) {
 
   // Populate form when editing
   useEffect(() => {
-    // Skip if we have restored from preview
-    if (isRestoredFromPreview) return;
-    
+    // Skip if we have restored from preview or draft
+    if (isRestoredFromPreview || isRestoredFromDraft) return;
+
     if (mode === 'edit' && existingEntry) {
       setFormData({
         title: existingEntry.frontMatter.title || '',
@@ -89,7 +90,7 @@ export function EntryForm({ mode }: EntryFormProps) {
         tags: existingEntry.frontMatter.tags?.map(t => t.name) || [],
         content: existingEntry.content || '',
       });
-      
+
       // Create initial markdown content
       const markdown = createMarkdownWithFrontMatter(existingEntry.frontMatter, existingEntry.content);
       setMarkdownContent(markdown);
@@ -98,7 +99,7 @@ export function EntryForm({ mode }: EntryFormProps) {
       // For new entries, set empty original markdown
       setOriginalMarkdown('');
     }
-  }, [mode, existingEntry, isRestoredFromPreview]);
+  }, [mode, existingEntry, isRestoredFromPreview, isRestoredFromDraft]);
 
   // Update markdown content when updateTimestamp changes
   useEffect(() => {
@@ -129,17 +130,15 @@ export function EntryForm({ mode }: EntryFormProps) {
     // Skip if still loading in edit mode
     if (mode === 'edit' && loadingEntry) return;
 
-    // Skip if edit mode and entry data has been loaded
-    if (mode === 'edit' && existingEntry) return;
-
     const restoredDraft = draft.restore();
     if (restoredDraft) {
       setFormData(restoredDraft.formData);
       setEntryIdInput(restoredDraft.entryIdInput || '');
       setMarkdownMode(restoredDraft.markdownMode || false);
       setUpdateTimestamp(restoredDraft.updateTimestamp ?? true);
+      setIsRestoredFromDraft(true);
     }
-  }, [mode, loadingEntry, existingEntry, isRestoredFromPreview, location.state, draft]);
+  }, [mode, loadingEntry, isRestoredFromPreview, location.state, draft]);
 
   // Auto-save draft to sessionStorage
   useEffect(() => {
@@ -183,6 +182,7 @@ export function EntryForm({ mode }: EntryFormProps) {
 
   const handleDiscardDraft = () => {
     draft.clear();
+    setIsRestoredFromDraft(false);
     resetForm();
   };
 

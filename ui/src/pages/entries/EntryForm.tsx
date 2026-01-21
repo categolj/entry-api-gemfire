@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams, Link, useLocation } from 'react-router-dom';
 import MDEditor from '@uiw/react-md-editor';
 import { useTenant, useApi, useDraft } from '../../hooks';
-import { api } from '../../services';
+import { api, ApiError } from '../../services';
 import { LoadingSpinner, ErrorAlert, Button, DraftBanner } from '../../components/common';
 import { Input, Textarea, TagInput, CategoryInput } from '../../components/forms';
 import { FrontMatter, PreviewState } from '../../types';
@@ -251,7 +251,12 @@ export function EntryForm({ mode }: EntryFormProps) {
       setMarkdownContent(markdown);
       setOriginalMarkdown(markdown);
     } catch (error) {
-      setSubmitError(`Entry with ID ${targetId} not found`);
+      if (error instanceof ApiError) {
+        const detail = error.problemDetail?.detail || error.message;
+        setSubmitError(`HTTP ${error.status}: ${detail}`);
+      } else {
+        setSubmitError(`Entry with ID ${targetId} not found`);
+      }
     } finally {
       setIsLoadingExisting(false);
     }
@@ -270,7 +275,12 @@ export function EntryForm({ mode }: EntryFormProps) {
       const summary = await api.summarize(formData.content);
       handleFieldChange('summary', summary);
     } catch (error) {
-      setSubmitError(error instanceof Error ? error.message : 'Failed to generate summary');
+      if (error instanceof ApiError) {
+        const detail = error.problemDetail?.detail || error.message;
+        setSubmitError(`HTTP ${error.status}: ${detail}`);
+      } else {
+        setSubmitError(error instanceof Error ? error.message : 'Failed to generate summary');
+      }
     } finally {
       setIsSummarizing(false);
     }

@@ -8,7 +8,7 @@ interface ErrorAlertProps {
 
 export function ErrorAlert({ title = 'Error', message, onDismiss }: ErrorAlertProps) {
   return (
-    <div className="border border-red-300 bg-white p-4 mb-4">
+    <div role="alert" className="border border-red-300 bg-white p-4 mb-4">
       <div className="flex">
         <div className="flex-shrink-0">
           <svg

@@ -251,6 +251,49 @@ class ConsoleE2ETest {
 		entryListPage.verifyEntryCount(3);
 	}
 
+	@Test
+	void loadNonExistingEntryShowsErrorWithStatusCode() {
+		// Login and navigate to create entry form
+		EntryListPage entryListPage = login();
+		entryListPage.waitForLoad();
+
+		EntryFormPage formPage = entryListPage.clickNewEntry();
+		formPage.waitForLoad();
+		formPage.verifyCreatePageDisplayed();
+
+		// Try to load a non-existing entry (ID 99999)
+		formPage.fillEntryId("99999");
+		formPage.clickLoad();
+
+		// Verify the error message is displayed with HTTP status code
+		formPage.verifyErrorDisplayed();
+		formPage.verifyErrorContains("HTTP");
+	}
+
+	@Test
+	void autoGenerateSummaryFailureShowsErrorWithStatusCode() {
+		// Setup OpenAI mock to return an error
+		setupOpenAiMockError(500, "Internal server error");
+
+		// Login and navigate to create entry form
+		EntryListPage entryListPage = login();
+		entryListPage.waitForLoad();
+
+		EntryFormPage formPage = entryListPage.clickNewEntry();
+		formPage.waitForLoad();
+		formPage.verifyCreatePageDisplayed();
+
+		// Fill in the title and content
+		formPage.fillTitle("Test Entry").fillContent("Some content to summarize.");
+
+		// Click Auto Generate button
+		formPage.clickAutoGenerateSummary();
+
+		// Verify the error message contains HTTP status code
+		formPage.verifyErrorDisplayed();
+		formPage.verifyErrorContainsStatusCode(500);
+	}
+
 	void setupOpenAiMock(String summaryText) {
 		String sseResponse = """
 				data: {"id":"chatcmpl-123","object":"chat.completion.chunk","created":1234567890,"model":"gpt-4o-mini","choices":[{"index":0,"delta":{"role":"assistant","content":""},"finish_reason":null}]}
@@ -266,6 +309,24 @@ class ConsoleE2ETest {
 
 		mockServer.POST("/v1/chat/completions",
 				request -> Response.builder().status(200).contentType("text/event-stream").body(sseResponse).build());
+	}
+
+	void setupOpenAiMockError(int status, String errorMessage) {
+		String errorResponse = """
+				{
+					"type": "https://api.openai.com/docs/errors",
+					"title": "Error",
+					"status": %d,
+					"detail": "%s"
+				}
+				""".formatted(status, errorMessage);
+
+		mockServer.POST("/v1/chat/completions",
+				request -> Response.builder()
+					.status(status)
+					.contentType("application/json")
+					.body(errorResponse)
+					.build());
 	}
 
 }

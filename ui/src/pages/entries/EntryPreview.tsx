@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useSWRConfig } from 'swr';
 import { useTenant } from '../../hooks';
-import { api } from '../../services';
+import { api, ApiError } from '../../services';
 import { ErrorAlert, DiffViewer } from '../../components/common';
 import { Entry, FrontMatter, CreateEntryRequest, UpdateEntryRequest, PreviewState } from '../../types';
 import { createMarkdownWithFrontMatter } from '../../utils';
@@ -105,7 +105,12 @@ export function EntryPreview() {
         navigate(`/console/${tenant}/entries/${updatedEntry.entryId}`);
       }
     } catch (error) {
-      setSubmitError(error instanceof Error ? error.message : 'Failed to save entry');
+      if (error instanceof ApiError) {
+        const detail = error.problemDetail?.detail || error.message;
+        setSubmitError(`HTTP ${error.status}: ${detail}`);
+      } else {
+        setSubmitError(error instanceof Error ? error.message : 'Failed to save entry');
+      }
     } finally {
       setIsSubmitting(false);
     }

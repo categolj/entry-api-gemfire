@@ -219,4 +219,28 @@ public class EntryFormPage extends BasePage {
 		return clickPreviewAndUpdate().confirmAndSave();
 	}
 
+	/**
+	 * Verify that an error alert is displayed.
+	 */
+	public EntryFormPage verifyErrorDisplayed() {
+		assertThat(page.locator("[role='alert']")).isVisible();
+		return this;
+	}
+
+	/**
+	 * Verify that the error alert contains the expected text.
+	 */
+	public EntryFormPage verifyErrorContains(String expectedText) {
+		assertThat(page.locator("[role='alert']")).containsText(expectedText);
+		return this;
+	}
+
+	/**
+	 * Verify that the error alert contains the HTTP status code.
+	 */
+	public EntryFormPage verifyErrorContainsStatusCode(int statusCode) {
+		assertThat(page.locator("[role='alert']")).containsText("HTTP " + statusCode);
+		return this;
+	}
+
 }

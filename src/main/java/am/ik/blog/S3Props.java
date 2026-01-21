@@ -12,7 +12,7 @@ import org.springframework.validation.Validator;
 @ConfigurationProperties(prefix = "blog.s3")
 public record S3Props(String backetName, @DefaultValue("false") boolean createBucket,
 		@DefaultValue("10m") Duration presignedUrlExpiration, @DefaultValue( {
-				"png", "jpg", "jpeg", "gif", "webp" }) List<String> allowedExtensions)
+				"png", "jpg", "jpeg", "gif", "webp", "svg" }) List<String> allowedExtensions)
 		implements
 			Validator{
 

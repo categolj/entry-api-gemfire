@@ -1,7 +1,7 @@
 /**
  * Allowed image file extensions for upload.
  */
-export const ALLOWED_IMAGE_EXTENSIONS = ['png', 'jpg', 'jpeg', 'gif', 'webp'];
+export const ALLOWED_IMAGE_EXTENSIONS = ['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg'];
 
 /**
  * Check if the file is a valid image file based on extension.

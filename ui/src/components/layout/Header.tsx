@@ -39,7 +39,7 @@ export function Header({ tenant, isDefaultTenant, showTenantInfo = false, showNa
               </Link>
             )}
             {showTenantInfo && tenant && (
-              <span className="text-sm text-gray-500">
+              <span className="px-3 py-1 text-sm font-semibold text-white bg-gray-800 rounded-full">
                 {isDefaultTenant ? 'Default' : tenant}
               </span>
             )}

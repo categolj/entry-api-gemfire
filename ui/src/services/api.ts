@@ -26,6 +26,32 @@ class ApiError extends Error {
   }
 }
 
+// Spring Boot default error response format
+interface SpringBootError {
+  timestamp?: string;
+  status?: number;
+  error?: string;
+  message?: string;
+  path?: string;
+}
+
+// Extract error message from various error response formats
+function extractErrorMessage(errorBody: ProblemDetail | SpringBootError): string {
+  // ProblemDetail format (RFC 7807)
+  if ('detail' in errorBody && errorBody.detail) {
+    return errorBody.detail;
+  }
+  // Spring Boot default error format
+  if ('message' in errorBody && errorBody.message) {
+    return errorBody.message;
+  }
+  // Fallback to error field
+  if ('error' in errorBody && errorBody.error) {
+    return errorBody.error;
+  }
+  return 'API request failed';
+}
+
 async function handleResponse<T>(response: Response): Promise<T> {
   if (!response.ok) {
     // Handle authentication errors
@@ -38,12 +64,15 @@ async function handleResponse<T>(response: Response): Promise<T> {
       }
       throw new ApiError('Authentication required', response.status);
     }
-    
+
     const contentType = response.headers.get('content-type');
     if (contentType?.includes('application/json')) {
       try {
-        const problemDetail = await response.json() as ProblemDetail;
-        throw new ApiError(problemDetail.detail || 'API request failed', response.status, problemDetail);
+        const errorBody = await response.json() as ProblemDetail | SpringBootError;
+        const message = extractErrorMessage(errorBody);
+        // Store as ProblemDetail if it has ProblemDetail fields
+        const problemDetail: ProblemDetail | undefined = 'detail' in errorBody ? errorBody : undefined;
+        throw new ApiError(message, response.status, problemDetail);
       } catch (e) {
         if (e instanceof ApiError) throw e;
         throw new ApiError(`HTTP ${response.status}: ${response.statusText}`, response.status);

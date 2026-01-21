@@ -272,7 +272,7 @@ class ConsoleE2ETest {
 
 	@Test
 	void autoGenerateSummaryFailureShowsErrorWithStatusCode() {
-		// Setup OpenAI mock to return an error
+		// Setup OpenAI mock to return an error in ProblemDetail format
 		setupOpenAiMockError(500, "Internal server error");
 
 		// Login and navigate to create entry form

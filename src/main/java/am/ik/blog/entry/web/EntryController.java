@@ -224,8 +224,8 @@ public class EntryController {
 				.categories(new Category("Programming"), new Category("Java"), new Category("Spring"))
 				.tags(new Tag("Java"), new Tag("Spring Boot"), new Tag("Tutorial"))
 				.build())
-			.created(Author.builder().build())
-			.updated(Author.builder().build())
+			.created(Author.builder().name("system").build())
+			.updated(Author.builder().name("system").build())
 			.build()
 			.toMarkdown();
 	}

@@ -10,7 +10,7 @@ public class TestcontainersConfiguration {
 
 	@Bean
 	GemFireCluster cluster() {
-		GemFireCluster cluster = new GemFireCluster("gemfire/gemfire:10.2-jdk21", 1, 2);
+		GemFireCluster cluster = new GemFireCluster("gemfire/gemfire:10.2-jdk21", 1, 1);
 		cluster.acceptLicense();
 		cluster.withPdx("am\\.ik\\.blog\\.entry\\..+", true);
 		cluster.start();

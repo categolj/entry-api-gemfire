@@ -323,4 +323,34 @@ public class EntryFormPage extends BasePage {
 		return this;
 	}
 
+	/**
+	 * Simulate pasting an image from clipboard onto the MDEditor.
+	 * @param imageData the image data as byte array
+	 * @param mimeType the MIME type (e.g., "image/png")
+	 * @return this page object for chaining
+	 */
+	public EntryFormPage pasteImageFromClipboard(byte[] imageData, String mimeType) {
+		String base64Content = Base64.getEncoder().encodeToString(imageData);
+		page.evaluate("""
+				([base64, type]) => {
+				    const byteString = atob(base64);
+				    const ab = new ArrayBuffer(byteString.length);
+				    const ia = new Uint8Array(ab);
+				    for (let i = 0; i < byteString.length; i++) {
+				        ia[i] = byteString.charCodeAt(i);
+				    }
+				    const blob = new Blob([ab], { type: type });
+				    const dataTransfer = new DataTransfer();
+				    dataTransfer.items.add(new File([blob], '', { type: type }));
+				    const pasteEvent = new ClipboardEvent('paste', {
+				        bubbles: true,
+				        cancelable: true,
+				        clipboardData: dataTransfer
+				    });
+				    document.querySelector('.w-md-editor').dispatchEvent(pasteEvent);
+				}
+				""", Arrays.asList(base64Content, mimeType));
+		return this;
+	}
+
 }

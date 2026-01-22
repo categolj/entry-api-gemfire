@@ -500,7 +500,7 @@ export function EntryForm({ mode }: EntryFormProps) {
                 />
               </div>
               <p className="mt-2 text-sm text-gray-500">
-                Edit the complete entry including front matter and content in markdown format with live preview. Drag and drop images to upload.
+                Edit the complete entry including front matter and content in markdown format with live preview. Drag and drop or paste images to upload.
               </p>
             </div>
           </>
@@ -626,7 +626,7 @@ export function EntryForm({ mode }: EntryFormProps) {
                 />
               </div>
               <p className="mt-2 text-sm text-gray-500">
-                Write your content using Markdown syntax with live preview. Drag and drop images to upload.
+                Write your content using Markdown syntax with live preview. Drag and drop or paste images to upload.
               </p>
             </div>
           </>

@@ -8,6 +8,7 @@ import {
   uploadImageToS3,
   generateMarkdownImage,
   getPublicUrlFromPresigned,
+  createFileWithName,
   ALLOWED_IMAGE_EXTENSIONS,
 } from '../../utils/imageUpload';
 
@@ -112,6 +113,28 @@ export function ImageDropEditor({
     }
   };
 
+  const handlePaste = (e: React.ClipboardEvent<HTMLDivElement>) => {
+    const items = e.clipboardData?.items;
+    if (!items) return;
+
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i];
+      if (item.type.startsWith('image/')) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const file = item.getAsFile();
+        if (file) {
+          const textarea = e.currentTarget.querySelector<HTMLTextAreaElement>('.w-md-editor-text-input');
+          const cursorPosition = textarea?.selectionStart;
+          const pastedFile = createFileWithName(file);
+          void handleImageUpload(pastedFile, cursorPosition);
+        }
+        return;
+      }
+    }
+  };
+
   return (
     <div
       className={`relative rounded transition-all duration-200 ${
@@ -121,6 +144,7 @@ export function ImageDropEditor({
       onDragOver={handleDragOver}
       onDragEnter={handleDragEnter}
       onDragLeave={handleDragLeave}
+      onPaste={handlePaste}
     >
       <MDEditor
         value={value}

@@ -399,6 +399,32 @@ class ConsoleE2ETest {
 		formPage.verifyUploadError("Invalid file type");
 	}
 
+	@Test
+	void uploadImageByClipboardPaste() throws IOException {
+		// Login and navigate to create entry form
+		EntryListPage entryListPage = login();
+		entryListPage.waitForLoad();
+
+		EntryFormPage formPage = entryListPage.clickNewEntry();
+		formPage.waitForLoad();
+		formPage.verifyCreatePageDisplayed();
+
+		// Fill in title and content first
+		formPage.fillTitle("Test with Pasted Image").fillContent("Here is a pasted image:");
+
+		// Create test PNG image
+		byte[] imageData = createTestPngImage();
+
+		// Paste image from clipboard
+		formPage.pasteImageFromClipboard(imageData, "image/png");
+
+		// Wait for upload to complete
+		formPage.waitForUploadComplete();
+
+		// Verify that image markdown is inserted into content
+		formPage.verifyContentContainsImageMarkdown();
+	}
+
 	private byte[] createTestPngImage() throws IOException {
 		BufferedImage image = new BufferedImage(10, 10, BufferedImage.TYPE_INT_RGB);
 		// Fill with a simple color pattern

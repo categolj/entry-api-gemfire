@@ -1,7 +1,35 @@
 /**
- * Allowed image file extensions for upload.
+ * Mapping from MIME types to file extensions.
  */
-export const ALLOWED_IMAGE_EXTENSIONS = ['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg'];
+const MIME_TO_EXTENSION: Record<string, string> = {
+  'image/png': 'png',
+  'image/jpeg': 'jpg',
+  'image/gif': 'gif',
+  'image/webp': 'webp',
+  'image/svg+xml': 'svg',
+};
+
+/**
+ * Allowed image file extensions for upload.
+ * Derived from MIME_TO_EXTENSION, with 'jpeg' as an alias for 'jpg'.
+ */
+export const ALLOWED_IMAGE_EXTENSIONS = [...new Set([...Object.values(MIME_TO_EXTENSION), 'jpeg'])];
+
+/**
+ * Create a file with a proper name from clipboard paste.
+ * If the file already has a meaningful name with extension, return it as-is.
+ * Otherwise, generate a name based on the MIME type.
+ * @param file - The file from clipboard
+ * @returns A file with a proper name
+ */
+export function createFileWithName(file: File): File {
+  if (file.name && file.name !== 'image.png' && file.name.includes('.')) {
+    return file;
+  }
+  const extension = MIME_TO_EXTENSION[file.type] || 'png';
+  const generatedName = `pasted-image.${extension}`;
+  return new File([file], generatedName, { type: file.type });
+}
 
 /**
  * Check if the file is a valid image file based on extension.

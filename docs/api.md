@@ -28,6 +28,8 @@ The API uses Spring Security with Basic Authentication. Some endpoints require a
 | Update Entry (PUT/PATCH) | `entry:edit`       |
 | Delete Entry (DELETE)    | `entry:delete`     |
 | Import Entries           | `entry:import`     |
+| Generate Summary (POST)  | `entry:edit`       |
+| S3 Presign URL (POST)    | `entry:edit`       |
 
 For tenant-specific endpoints, authorities are checked against the tenant context.
 
@@ -437,6 +439,113 @@ GET /entries/template.md
 - Status: 200 OK
 - Content-Type: text/markdown
 - Body: Markdown template with example content
+
+### 12. Generate Summary
+
+Generate a summary for the given content using AI. **Requires authentication.**
+
+**Request:**
+
+```
+POST /tenants/{tenantId}/summary
+Content-Type: application/json
+```
+
+**Request Body:**
+
+```json
+{
+  "content": "The blog content to summarize..."
+}
+```
+
+**Response:**
+
+- Status: 200 OK
+- Body:
+
+```json
+{
+  "summary": "Generated summary text..."
+}
+```
+
+**Error Responses:**
+
+- Status: 400 Bad Request (when content is empty or blank)
+
+```json
+{
+  "detail": "Content must not be empty",
+  "status": 400,
+  "title": "Bad Request"
+}
+```
+
+- Status: 401 Unauthorized (when not authenticated)
+- Status: 403 Forbidden (when user lacks `entry:edit` authority for the tenant)
+
+**Example:**
+
+```bash
+curl -u editor:password -X POST http://localhost:8080/tenants/_/summary \
+  -H "Content-Type: application/json" \
+  -d '{"content": "Sample blog content about Spring Boot"}'
+```
+
+### 13. Get S3 Presigned URL
+
+Generate a presigned URL for uploading files to S3. The uploaded files will be publicly accessible. **Requires authentication.**
+
+**Request:**
+
+```
+POST /tenants/{tenantId}/s3/presign
+Content-Type: application/json
+```
+
+**Request Body:**
+
+```json
+{
+  "fileName": "image.png"
+}
+```
+
+**Response:**
+
+- Status: 200 OK
+- Body:
+
+```json
+{
+  "url": "https://s3.example.com/{tenantId}/image.png?X-Amz-Algorithm=..."
+}
+```
+
+The returned URL can be used to upload a file via HTTP PUT request. After upload, the file is publicly accessible at the URL without query parameters.
+
+**Error Responses:**
+
+- Status: 401 Unauthorized (when not authenticated)
+- Status: 403 Forbidden (when user lacks `entry:edit` authority for the tenant)
+
+**Example:**
+
+```bash
+# Step 1: Get presigned URL
+curl -u editor:password -X POST http://localhost:8080/tenants/_/s3/presign \
+  -H "Content-Type: application/json" \
+  -d '{"fileName": "my-image.png"}'
+
+# Step 2: Upload file using presigned URL
+curl -X PUT "${PRESIGNED_URL}" \
+  -H "Content-Type: image/png" \
+  --data-binary @my-image.png
+
+# Step 3: Access file publicly (URL without query parameters)
+curl "https://s3.example.com/_/my-image.png"
+```
 
 ## Error Handling
 

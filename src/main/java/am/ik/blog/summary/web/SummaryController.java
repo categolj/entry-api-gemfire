@@ -2,6 +2,7 @@ package am.ik.blog.summary.web;
 
 import am.ik.blog.summary.SummaryService;
 import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -16,8 +17,8 @@ public class SummaryController {
 		this.summaryService = summaryService;
 	}
 
-	@PostMapping(path = "/summarize")
-	public SummaryResponse summarize(@RequestBody SummaryRequest request) {
+	@PostMapping(path = "/tenants/{tenantId}/summary")
+	public SummaryResponse summarize(@PathVariable String tenantId, @RequestBody SummaryRequest request) {
 		if (request.content() == null || request.content().isBlank()) {
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Content must not be empty");
 		}

@@ -225,8 +225,8 @@ export const api = {
   },
 
   // Summary operations
-  async summarize(content: string): Promise<string> {
-    const response = await fetch('/summarize', {
+  async summarize(tenantId: string, content: string): Promise<string> {
+    const response = await fetch(buildUrl(tenantId, '/summary'), {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

@@ -273,7 +273,7 @@ export function EntryForm({ mode }: EntryFormProps) {
     setSubmitError(null);
 
     try {
-      const summary = await api.summarize(formData.content);
+      const summary = await api.summarize(tenant, formData.content);
       handleFieldChange('summary', summary);
     } catch (error) {
       if (error instanceof ApiError) {

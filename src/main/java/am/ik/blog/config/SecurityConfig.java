@@ -80,7 +80,6 @@ public class SecurityConfig {
 				.requestMatchers(HttpMethod.PUT,    "/tenants/{tenantId}/**").access(editForTenant)
 				.requestMatchers(HttpMethod.DELETE, "/tenants/{tenantId}/**").access(deleteForTenant)
 				.requestMatchers(HttpMethod.POST,   "/tenants/{tenantId}/admin/import").access(importForTenant)
-				.requestMatchers(HttpMethod.POST,   "/summarize").hasAuthority("entry:summarize")
 				.anyRequest().permitAll())
 			// @formatter:on
 			.httpBasic(httpBasic -> httpBasic.authenticationEntryPoint(new NoPopupBasicAuthenticationEntryPoint()))

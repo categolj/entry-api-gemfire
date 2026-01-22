@@ -9,7 +9,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 public enum Privilege {
 
-	GET, LIST, EDIT, DELETE, IMPORT, EXPORT, SUMMARIZE, ADMIN;
+	GET, LIST, EDIT, DELETE, IMPORT, EXPORT, ADMIN;
 
 	public static final String DEFAULT_TENANT_ID = "_";
 
@@ -18,7 +18,7 @@ public enum Privilege {
 			return EnumSet.allOf(Privilege.class);
 		}
 		if ("EDITOR".equalsIgnoreCase(role)) {
-			return EnumSet.of(GET, LIST, EDIT, SUMMARIZE);
+			return EnumSet.of(GET, LIST, EDIT);
 		}
 		if ("VIEWER".equalsIgnoreCase(role)) {
 			return EnumSet.of(GET, LIST);

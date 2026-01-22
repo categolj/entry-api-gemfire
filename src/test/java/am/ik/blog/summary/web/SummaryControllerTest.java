@@ -19,7 +19,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
 		properties = { "blog.tenant.users[0]=blog-ui|{noop}empty|_=GET,LIST",
 				"blog.tenant.users[1]=readonly|{noop}secret|_=GET,LIST",
-				"blog.tenant.users[2]=editor|{noop}password|_=EDIT,SUMMARIZE" })
+				"blog.tenant.users[2]=editor|{noop}password|_=EDIT" })
 class SummaryControllerTest {
 
 	RestTestClient client;
@@ -59,8 +59,28 @@ class SummaryControllerTest {
 		setupOpenAiMock(summaryText);
 
 		this.client.post()
-			.uri("/summarize")
+			.uri("/tenants/{tenantId}/summary", "_")
 			.headers(headers -> headers.setBasicAuth("admin", "changeme"))
+			.contentType(MediaType.APPLICATION_JSON)
+			.body("""
+					{"content": "Sample blog content about Spring Boot"}
+					""")
+			.exchange()
+			.expectStatus()
+			.isOk()
+			.expectBody()
+			.jsonPath("$.summary")
+			.isEqualTo(summaryText);
+	}
+
+	@Test
+	void summarize_successWithEditor() {
+		String summaryText = "This article explains how to get started with Spring Boot.";
+		setupOpenAiMock(summaryText);
+
+		this.client.post()
+			.uri("/tenants/{tenantId}/summary", "_")
+			.headers(headers -> headers.setBasicAuth("editor", "password"))
 			.contentType(MediaType.APPLICATION_JSON)
 			.body("""
 					{"content": "Sample blog content about Spring Boot"}
@@ -76,7 +96,7 @@ class SummaryControllerTest {
 	@Test
 	void summarize_emptyContent_returnsBadRequest() {
 		this.client.post()
-			.uri("/summarize")
+			.uri("/tenants/{tenantId}/summary", "_")
 			.headers(headers -> headers.setBasicAuth("admin", "changeme"))
 			.contentType(MediaType.APPLICATION_JSON)
 			.body("""
@@ -93,7 +113,7 @@ class SummaryControllerTest {
 	@Test
 	void summarize_blankContent_returnsBadRequest() {
 		this.client.post()
-			.uri("/summarize")
+			.uri("/tenants/{tenantId}/summary", "_")
 			.headers(headers -> headers.setBasicAuth("admin", "changeme"))
 			.contentType(MediaType.APPLICATION_JSON)
 			.body("""
@@ -110,7 +130,7 @@ class SummaryControllerTest {
 	@Test
 	void summarize_nullContent_returnsBadRequest() {
 		this.client.post()
-			.uri("/summarize")
+			.uri("/tenants/{tenantId}/summary", "_")
 			.headers(headers -> headers.setBasicAuth("admin", "changeme"))
 			.contentType(MediaType.APPLICATION_JSON)
 			.body("""
@@ -126,7 +146,7 @@ class SummaryControllerTest {
 
 	@Test
 	void summarize_unauthorized() {
-		this.client.post().uri("/summarize").contentType(MediaType.APPLICATION_JSON).body("""
+		this.client.post().uri("/tenants/{tenantId}/summary", "_").contentType(MediaType.APPLICATION_JSON).body("""
 				{"content": "Sample content"}
 				""").exchange().expectStatus().isUnauthorized();
 	}
@@ -134,8 +154,22 @@ class SummaryControllerTest {
 	@Test
 	void summarize_forbidden() {
 		this.client.post()
-			.uri("/summarize")
+			.uri("/tenants/{tenantId}/summary", "_")
 			.headers(headers -> headers.setBasicAuth("readonly", "secret"))
+			.contentType(MediaType.APPLICATION_JSON)
+			.body("""
+					{"content": "Sample content"}
+					""")
+			.exchange()
+			.expectStatus()
+			.isForbidden();
+	}
+
+	@Test
+	void summarize_forbiddenForOtherTenant() {
+		this.client.post()
+			.uri("/tenants/{tenantId}/summary", "en")
+			.headers(headers -> headers.setBasicAuth("editor", "password"))
 			.contentType(MediaType.APPLICATION_JSON)
 			.body("""
 					{"content": "Sample content"}

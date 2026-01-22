@@ -1,7 +1,6 @@
 package am.ik.blog.edit.web;
 
 import am.ik.blog.MockConfig;
-import am.ik.blog.TestcontainersConfiguration;
 import am.ik.blog.mockserver.MockServer;
 import am.ik.blog.mockserver.MockServer.Response;
 import org.junit.jupiter.api.BeforeEach;
@@ -11,15 +10,15 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.client.RestTestClient;
-import org.testcontainers.junit.jupiter.Testcontainers;
 
-@Testcontainers(disabledWithoutDocker = true)
-@Import({ TestcontainersConfiguration.class, MockConfig.class })
+@Import({ MockConfig.class })
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
 		properties = { "blog.tenant.users[0]=blog-ui|{noop}empty|_=GET,LIST",
 				"blog.tenant.users[1]=readonly|{noop}secret|_=GET,LIST",
 				"blog.tenant.users[2]=editor|{noop}password|_=EDIT" })
+@ActiveProfiles("mock")
 class EditControllerTest {
 
 	RestTestClient client;

@@ -3,3 +3,4 @@ export * from './ErrorAlert';
 export * from './Button';
 export * from './DiffViewer';
 export * from './DraftBanner';
+export * from './AIEditingDialog';

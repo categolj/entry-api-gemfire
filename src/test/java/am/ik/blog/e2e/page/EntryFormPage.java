@@ -353,4 +353,86 @@ public class EntryFormPage extends BasePage {
 		return this;
 	}
 
+	/**
+	 * Click the AI Editing button.
+	 * @return this page object for chaining
+	 */
+	public EntryFormPage clickAIEditingButton() {
+		page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("AI Editing")).click();
+		return this;
+	}
+
+	/**
+	 * Select the edit mode from the dropdown.
+	 * @param mode the mode to select (e.g., "PROOFREADING", "COMPLETION", "EXPANSION")
+	 * @return this page object for chaining
+	 */
+	public EntryFormPage selectEditMode(String mode) {
+		page.locator("#edit-mode-select").selectOption(mode);
+		return this;
+	}
+
+	/**
+	 * Click the Run button in the AI Editing dialog.
+	 * @return this page object for chaining
+	 */
+	public EntryFormPage clickRunButton() {
+		page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Run").setExact(true)).click();
+		// Wait for loading to complete (Apply Changes button becomes enabled)
+		page.locator("button:has-text('Apply Changes'):not([disabled])").waitFor();
+		return this;
+	}
+
+	/**
+	 * Verify that the diff dialog is displayed.
+	 * @return this page object for chaining
+	 */
+	public EntryFormPage verifyDiffDialogDisplayed() {
+		assertThat(page.locator("text=Changes Preview")).isVisible();
+		return this;
+	}
+
+	/**
+	 * Click the Apply Changes button in the AI Editing dialog.
+	 * @return this page object for chaining
+	 */
+	public EntryFormPage clickApplyChangesButton() {
+		page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Apply Changes")).click();
+		// Wait for dialog to close (check for the dialog overlay to be hidden)
+		page.locator(".fixed.inset-0").waitFor(new Locator.WaitForOptions().setState(WaitForSelectorState.HIDDEN));
+		return this;
+	}
+
+	/**
+	 * Click the Cancel button in the AI Editing dialog.
+	 * @return this page object for chaining
+	 */
+	public EntryFormPage clickEditingCancelButton() {
+		// Click the Cancel button within the dialog
+		page.locator(".fixed button:has-text('Cancel')").click();
+		// Wait for dialog to close (check for the dialog overlay to be hidden)
+		page.locator(".fixed.inset-0").waitFor(new Locator.WaitForOptions().setState(WaitForSelectorState.HIDDEN));
+		return this;
+	}
+
+	/**
+	 * Verify that the content contains the expected text.
+	 * @param expectedText the text to check for
+	 * @return this page object for chaining
+	 */
+	public EntryFormPage verifyContentContains(String expectedText) {
+		Locator contentEditor = page.locator(".w-md-editor-text-input");
+		assertThat(contentEditor).containsText(expectedText);
+		return this;
+	}
+
+	/**
+	 * Get the current content from the editor.
+	 * @return the content text
+	 */
+	public String getContent() {
+		Locator contentEditor = page.locator(".w-md-editor-text-input");
+		return contentEditor.inputValue();
+	}
+
 }

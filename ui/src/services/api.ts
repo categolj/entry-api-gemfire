@@ -259,6 +259,20 @@ export const api = {
     const result = await handleResponse<{ url: string }>(response);
     return result.url;
   },
+
+  // Edit operations (AI text editing)
+  async edit(tenantId: string, content: string, mode: 'PROOFREADING' | 'COMPLETION' | 'EXPANSION'): Promise<string> {
+    const response = await fetch(buildUrl(tenantId, '/edit'), {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...buildHeaders(),
+      },
+      body: JSON.stringify({ content, mode }),
+    });
+    const result = await handleResponse<{ content: string }>(response);
+    return result.content;
+  },
 };
 
 export { ApiError };

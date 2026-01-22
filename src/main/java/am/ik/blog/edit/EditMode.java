@@ -3,17 +3,20 @@ package am.ik.blog.edit;
 public enum EditMode {
 
 	PROOFREADING("""
-			You need to proofread user-entered text (blog posts).
-			Edits that significantly alter the intent of the text are not required.
+			You need to proofread user-entered text (blog posts) for formatting and stylistic issues only.
+			Fix typos, punctuation errors, and grammatical mistakes.
+			Do not change the content, structure, or meaning of the text.
+			Do not add or remove any sentences.
 			"""), //
-	COMPLETION(
-			"""
-					In addition to proofreading the article, your role is to fill in any unnatural parts of the text with natural ones.
-					You do not need to add any new facts.
-					"""), //
+	COMPLETION("""
+			In addition to proofreading, fill in missing sentences or explanations that are lacking.
+			If a sentence is incomplete or an explanation is insufficient, complete it naturally.
+			Do not add entirely new topics or sections.
+			"""), //
 	EXPANSION(
 			"""
-					In addition to proofreading and completing the article, you will need to thoughtfully write a follow-up to the article.
+					In addition to proofreading and completing the article, imagine what the author would write next and continue the article naturally.
+					Do not add headings like "Follow-up" or "Continuation". Just seamlessly extend the content.
 					""");
 
 	private final String systemPrompt;

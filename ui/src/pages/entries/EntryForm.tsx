@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useParams, Link, useLocation } from 'react-router-dom';
 import { useTenant, useApi, useDraft } from '../../hooks';
 import { api, ApiError } from '../../services';
-import { LoadingSpinner, ErrorAlert, Button, DraftBanner } from '../../components/common';
+import { LoadingSpinner, ErrorAlert, Button, DraftBanner, AIEditingDialog } from '../../components/common';
 import { Input, TagInput, CategoryInput, ImageDropEditor, SummaryField } from '../../components/forms';
 import { FrontMatter, PreviewState } from '../../types';
 import { parseMarkdownWithFrontMatter, createMarkdownWithFrontMatter } from '../../utils';
@@ -39,6 +39,7 @@ export function EntryForm({ mode }: EntryFormProps) {
   const [isSummarizing, setIsSummarizing] = useState(false);
   const [isLoadingTemplate, setIsLoadingTemplate] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
+  const [showEditingDialog, setShowEditingDialog] = useState(false);
 
   const isFormBusy = isLoadingExisting || isSummarizing || isLoadingTemplate;
 
@@ -590,6 +591,16 @@ export function EntryForm({ mode }: EntryFormProps) {
               <p className="mt-2 text-sm text-gray-500">
                 Write your content using Markdown syntax with live preview. Drag and drop or paste images to upload.
               </p>
+              <div className="mt-4">
+                <Button
+                  type="button"
+                  variant="secondary"
+                  onClick={() => setShowEditingDialog(true)}
+                  disabled={!formData.content.trim() || isFormBusy}
+                >
+                  AI Editing
+                </Button>
+              </div>
             </div>
           </>
         )}
@@ -634,6 +645,18 @@ export function EntryForm({ mode }: EntryFormProps) {
         </div>
       </form>
 
+      {/* AI Editing Dialog */}
+      {showEditingDialog && (
+        <AIEditingDialog
+          originalContent={formData.content}
+          tenantId={tenant}
+          onApply={(content) => {
+            handleFieldChange('content', content);
+            setShowEditingDialog(false);
+          }}
+          onClose={() => setShowEditingDialog(false)}
+        />
+      )}
     </div>
   );
 }

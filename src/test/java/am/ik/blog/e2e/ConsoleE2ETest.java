@@ -438,4 +438,124 @@ class ConsoleE2ETest {
 		return baos.toByteArray();
 	}
 
+	@Test
+	void aiEditContent() {
+		// Setup OpenAI mock for editing
+		String editedText = "This is the corrected content with better grammar.";
+		setupOpenAiMockForEdit(editedText);
+
+		// Login and navigate to create entry form
+		EntryListPage entryListPage = login();
+		entryListPage.waitForLoad();
+
+		EntryFormPage formPage = entryListPage.clickNewEntry();
+		formPage.waitForLoad();
+		formPage.verifyCreatePageDisplayed();
+
+		// Fill in the title and content with typos
+		formPage.fillTitle("Test Entry").fillContent("This is content with some erors and bad grammer.");
+
+		// Click AI Editing button
+		formPage.clickAIEditingButton();
+
+		// Click Edit button and wait for result
+		formPage.clickRunButton();
+
+		// Verify diff dialog is displayed
+		formPage.verifyDiffDialogDisplayed();
+
+		// Click Apply Changes
+		formPage.clickApplyChangesButton();
+
+		// Verify content is updated with edited text
+		formPage.verifyContentContains(editedText);
+	}
+
+	@Test
+	void aiEditContentAndReject() {
+		// Setup OpenAI mock for editing
+		String editedText = "This is the corrected content.";
+		setupOpenAiMockForEdit(editedText);
+
+		// Login and navigate to create entry form
+		EntryListPage entryListPage = login();
+		entryListPage.waitForLoad();
+
+		EntryFormPage formPage = entryListPage.clickNewEntry();
+		formPage.waitForLoad();
+		formPage.verifyCreatePageDisplayed();
+
+		// Fill in the title and content
+		String originalContent = "Original content that should stay the same.";
+		formPage.fillTitle("Test Entry").fillContent(originalContent);
+
+		// Click AI Editing button
+		formPage.clickAIEditingButton();
+
+		// Click Edit button and wait for result
+		formPage.clickRunButton();
+
+		// Verify diff dialog is displayed
+		formPage.verifyDiffDialogDisplayed();
+
+		// Click Cancel
+		formPage.clickEditingCancelButton();
+
+		// Verify original content is preserved
+		formPage.verifyContentContains(originalContent);
+	}
+
+	@Test
+	void aiEditContentWithCompletionMode() {
+		// Setup OpenAI mock for completion mode
+		String completedText = "This is the content with completion mode applied.";
+		setupOpenAiMockForEdit(completedText);
+
+		// Login and navigate to create entry form
+		EntryListPage entryListPage = login();
+		entryListPage.waitForLoad();
+
+		EntryFormPage formPage = entryListPage.clickNewEntry();
+		formPage.waitForLoad();
+		formPage.verifyCreatePageDisplayed();
+
+		// Fill in the title and content
+		formPage.fillTitle("Test Entry").fillContent("Some incomplete content...");
+
+		// Click AI Editing button
+		formPage.clickAIEditingButton();
+
+		// Select Completion mode
+		formPage.selectEditMode("COMPLETION");
+
+		// Click Edit button and wait for result
+		formPage.clickRunButton();
+
+		// Verify diff dialog is displayed
+		formPage.verifyDiffDialogDisplayed();
+
+		// Click Apply Changes
+		formPage.clickApplyChangesButton();
+
+		// Verify content is updated
+		formPage.verifyContentContains(completedText);
+	}
+
+	void setupOpenAiMockForEdit(String resultText) {
+		String sseResponse = """
+				data: {"id":"chatcmpl-123","object":"chat.completion.chunk","created":1234567890,"model":"gpt-4o-mini","choices":[{"index":0,"delta":{"role":"assistant","content":""},"finish_reason":null}]}
+
+				data: {"id":"chatcmpl-123","object":"chat.completion.chunk","created":1234567890,"model":"gpt-4o-mini","choices":[{"index":0,"delta":{"content":"%s"},"finish_reason":null}]}
+
+				data: {"id":"chatcmpl-123","object":"chat.completion.chunk","created":1234567890,"model":"gpt-4o-mini","choices":[{"index":0,"delta":{},"finish_reason":"stop"}]}
+
+				data: [DONE]
+
+				"""
+			.formatted(resultText);
+
+		mockServer.POST("/v1/chat/completions",
+				request -> Response.builder().status(200).contentType("text/event-stream").body(sseResponse).build());
+	}
+
 }

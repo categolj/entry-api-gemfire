@@ -3,7 +3,7 @@ import { useNavigate, useParams, Link, useLocation } from 'react-router-dom';
 import { useTenant, useApi, useDraft } from '../../hooks';
 import { api, ApiError } from '../../services';
 import { LoadingSpinner, ErrorAlert, Button, DraftBanner } from '../../components/common';
-import { Input, Textarea, TagInput, CategoryInput, ImageDropEditor } from '../../components/forms';
+import { Input, TagInput, CategoryInput, ImageDropEditor, SummaryField } from '../../components/forms';
 import { FrontMatter, PreviewState } from '../../types';
 import { parseMarkdownWithFrontMatter, createMarkdownWithFrontMatter } from '../../utils';
 
@@ -263,30 +263,6 @@ export function EntryForm({ mode }: EntryFormProps) {
     }
   };
 
-  const handleAutoSummarize = async () => {
-    if (!formData.content.trim()) {
-      setSubmitError('Content is required to generate summary');
-      return;
-    }
-
-    setIsSummarizing(true);
-    setSubmitError(null);
-
-    try {
-      const summary = await api.summarize(tenant, formData.content);
-      handleFieldChange('summary', summary);
-    } catch (error) {
-      if (error instanceof ApiError) {
-        const detail = error.problemDetail?.detail || error.message;
-        setSubmitError(`HTTP ${error.status}: ${detail}`);
-      } else {
-        setSubmitError(error instanceof Error ? error.message : 'Failed to generate summary');
-      }
-    } finally {
-      setIsSummarizing(false);
-    }
-  };
-
   const handleLoadTemplate = async () => {
     setIsLoadingTemplate(true);
     setSubmitError(null);
@@ -534,28 +510,14 @@ export function EntryForm({ mode }: EntryFormProps) {
                   required
                   disabled={isFormBusy}
                 />
-                <div>
-                  <div className="flex items-center justify-between mb-1">
-                    <label className="block text-sm font-medium text-black">Summary</label>
-                    <Button
-                      type="button"
-                      variant="secondary"
-                      size="sm"
-                      onClick={() => void handleAutoSummarize()}
-                      disabled={isSummarizing || !formData.content.trim()}
-                      loading={isSummarizing}
-                    >
-                      Auto Generate
-                    </Button>
-                  </div>
-                  <Textarea
-                    value={formData.summary}
-                    onChange={(e) => handleFieldChange('summary', e.target.value)}
-                    placeholder="Brief description of the entry"
-                    rows={2}
-                    disabled={isFormBusy}
-                  />
-                </div>
+                <SummaryField
+                  value={formData.summary}
+                  onChange={(value) => handleFieldChange('summary', value)}
+                  content={formData.content}
+                  disabled={isFormBusy}
+                  onError={setSubmitError}
+                  onLoadingChange={setIsSummarizing}
+                />
                 {mode === 'create' && (
                   <div className="flex items-end space-x-2">
                     <div className="w-80">

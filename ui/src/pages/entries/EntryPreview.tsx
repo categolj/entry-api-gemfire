@@ -1,12 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useSWRConfig } from 'swr';
 import { useTenant } from '../../hooks';
 import { api, ApiError } from '../../services';
-import { ErrorAlert, DiffViewer } from '../../components/common';
+import { ErrorAlert, DiffDisplay, Button } from '../../components/common';
 import { Entry, FrontMatter, CreateEntryRequest, UpdateEntryRequest, PreviewState } from '../../types';
-import { createMarkdownWithFrontMatter } from '../../utils';
-
+import { createMarkdownWithFrontMatter, calculateDiff } from '../../utils';
 
 export function EntryPreview() {
   const { tenant } = useTenant();
@@ -14,7 +13,7 @@ export function EntryPreview() {
   const location = useLocation();
   const { mutate } = useSWRConfig();
   const state = location.state as PreviewState;
-  
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [existingEntryForId, setExistingEntryForId] = useState<Entry | null>(null);
@@ -34,16 +33,16 @@ export function EntryPreview() {
           const entryId = parseInt(state.entryIdInput!.trim(), 10);
           const existing = await api.getEntry(tenant, entryId);
           setExistingEntryForId(existing);
-          
+
           const existingMarkdown = createMarkdownWithFrontMatter(existing.frontMatter, existing.content);
           setOriginalMarkdown(existingMarkdown);
-        } catch (error) {
+        } catch {
           // Entry doesn't exist, which is fine for create with ID
           setExistingEntryForId(null);
           setOriginalMarkdown('');
         }
       };
-      
+
       void checkExistingEntry();
     } else if (state.mode === 'edit') {
       setOriginalMarkdown(state.originalMarkdown || '');
@@ -52,7 +51,7 @@ export function EntryPreview() {
 
   const handleConfirmSubmit = async () => {
     if (!state) return;
-    
+
     setIsSubmitting(true);
     setSubmitError(null);
 
@@ -60,13 +59,15 @@ export function EntryPreview() {
       const frontMatter: FrontMatter = {
         title: state.formData.title,
         summary: state.formData.summary || undefined,
-        categories: state.formData.categories.map(name => ({ name })),
-        tags: state.formData.tags.map(name => ({ name })),
+        categories: state.formData.categories.map((name) => ({ name })),
+        tags: state.formData.tags.map((name) => ({ name })),
         // Include date/updated logic here based on mode and updateTimestamp
         ...(state.existingEntry?.frontMatter.date && { date: state.existingEntry.frontMatter.date }),
-        ...(state.mode === 'edit' && !state.updateTimestamp && (state.existingEntry?.frontMatter.updated || state.existingEntry?.updated.date) && { 
-          updated: state.existingEntry?.frontMatter.updated || state.existingEntry?.updated.date 
-        }),
+        ...(state.mode === 'edit' &&
+          !state.updateTimestamp &&
+          (state.existingEntry?.frontMatter.updated || state.existingEntry?.updated.date) && {
+            updated: state.existingEntry?.frontMatter.updated || state.existingEntry?.updated.date,
+          }),
       };
 
       if (state.mode === 'create') {
@@ -122,26 +123,27 @@ export function EntryPreview() {
     const pathParts = location.pathname.split('/');
     const idIndex = pathParts.indexOf('entries') + 1;
     const entryId = state.mode === 'edit' ? pathParts[idIndex] : null;
-    
-    const backPath = state.mode === 'edit' 
-      ? `/console/${tenant}/entries/${entryId}/edit`
-      : `/console/${tenant}/entries/new`;
-    
+
+    const backPath =
+      state.mode === 'edit' ? `/console/${tenant}/entries/${entryId}/edit` : `/console/${tenant}/entries/new`;
+
     navigate(backPath, { state });
   };
 
   const getCurrentMarkdown = () => {
     if (!state) return '';
-    
+
     const frontMatter: FrontMatter = {
       title: state.formData.title,
       summary: state.formData.summary || undefined,
-      categories: state.formData.categories.map(name => ({ name })),
-      tags: state.formData.tags.map(name => ({ name })),
+      categories: state.formData.categories.map((name) => ({ name })),
+      tags: state.formData.tags.map((name) => ({ name })),
       ...(state.existingEntry?.frontMatter.date && { date: state.existingEntry.frontMatter.date }),
-      ...(state.mode === 'edit' && !state.updateTimestamp && (state.existingEntry?.frontMatter.updated || state.existingEntry?.updated.date) && { 
-        updated: state.existingEntry?.frontMatter.updated || state.existingEntry?.updated.date 
-      }),
+      ...(state.mode === 'edit' &&
+        !state.updateTimestamp &&
+        (state.existingEntry?.frontMatter.updated || state.existingEntry?.updated.date) && {
+          updated: state.existingEntry?.frontMatter.updated || state.existingEntry?.updated.date,
+        }),
     };
     return createMarkdownWithFrontMatter(frontMatter, state.formData.content);
   };
@@ -150,14 +152,19 @@ export function EntryPreview() {
     return null;
   }
 
-  const title = state.mode === 'create' 
-    ? (existingEntryForId ? `Review Changes for Entry ${state.entryIdInput}` : 'Review New Entry')
-    : 'Review Changes';
+  const title =
+    state.mode === 'create'
+      ? existingEntryForId
+        ? `Review Changes for Entry ${state.entryIdInput}`
+        : 'Review New Entry'
+      : 'Review Changes';
+
+  const diffLines = calculateDiff(originalMarkdown, getCurrentMarkdown());
 
   return (
-    <div>
+    <div className="flex flex-col h-[calc(100vh-120px)]">
       {/* Header */}
-      <div className="mb-6">
+      <div className="mb-6 flex-shrink-0">
         <nav className="flex" aria-label="Breadcrumb">
           <ol className="flex items-center space-x-2 text-sm">
             <li>
@@ -169,10 +176,7 @@ export function EntryPreview() {
               <span className="text-gray-300">/</span>
             </li>
             <li>
-              <button
-                onClick={handleBack}
-                className="text-gray-500 hover:text-black"
-              >
+              <button onClick={handleBack} className="text-gray-500 hover:text-black">
                 {state.mode === 'create' ? 'Create New Entry' : 'Edit Entry'}
               </button>
             </li>
@@ -189,20 +193,30 @@ export function EntryPreview() {
 
       {/* Error Display */}
       {submitError && (
-        <div className="mb-4">
+        <div className="mb-4 flex-shrink-0">
           <ErrorAlert message={submitError} onDismiss={() => setSubmitError(null)} />
         </div>
       )}
 
-      {/* Diff Viewer */}
-      <div className="border border-gray-200 p-4 h-96">
-        <DiffViewer
-          originalContent={originalMarkdown}
-          newContent={getCurrentMarkdown()}
-          onConfirm={() => void handleConfirmSubmit()}
-          onCancel={handleBack}
-          isLoading={isSubmitting}
-        />
+      {/* Diff Display */}
+      <div className="border border-gray-200 p-4 flex flex-col flex-1 min-h-0">
+        <div className="mb-4 flex-1 flex flex-col overflow-hidden min-h-0">
+          <DiffDisplay diffLines={diffLines} maxHeight="" className="flex-1 overflow-y-auto" />
+        </div>
+
+        <div className="flex justify-end space-x-3 flex-shrink-0 pt-4 border-t border-gray-200">
+          <Button type="button" variant="secondary" onClick={handleBack} disabled={isSubmitting}>
+            Back to Edit
+          </Button>
+          <Button
+            type="button"
+            onClick={() => void handleConfirmSubmit()}
+            disabled={isSubmitting}
+            loading={isSubmitting}
+          >
+            {isSubmitting ? 'Saving...' : 'Confirm & Save'}
+          </Button>
+        </div>
       </div>
     </div>
   );

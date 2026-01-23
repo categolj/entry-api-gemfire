@@ -1,8 +1,8 @@
-image: ghcr.io/categolj/entry-api-gemfire@sha256:9b8608260d41110526da38cabd6ad64f32d67c3489d375845771d6f92e4837a1
-git_revision: 8fdf4631effc89d742ca60231bab7ad2e34de43c
+image: ghcr.io/categolj/entry-api-gemfire@sha256:3d5389a4d47596ef7429721fae8317f8508fd6e2c125f9f218b19dccc28d359d
+git_revision: e0ced0650a95e6888ba357adce60879c72939f1d
 deployment:
   image:
     repository: ghcr.io/categolj/entry-api-gemfire
-    digest: sha256:9b8608260d41110526da38cabd6ad64f32d67c3489d375845771d6f92e4837a1
+    digest: sha256:3d5389a4d47596ef7429721fae8317f8508fd6e2c125f9f218b19dccc28d359d
   podLabels:
-    github.com/revision: 8fdf4631effc89d742ca60231bab7ad2e34de43c
+    github.com/revision: e0ced0650a95e6888ba357adce60879c72939f1d

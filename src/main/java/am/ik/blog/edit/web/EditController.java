@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
+import reactor.core.publisher.Mono;
 
 import java.util.Objects;
 
@@ -22,13 +23,13 @@ public class EditController {
 	}
 
 	@PostMapping(path = "/tenants/{tenantId}/edit")
-	public EditResponse edit(@PathVariable String tenantId, @RequestBody EditRequest request) {
+	public Mono<EditResponse> edit(@PathVariable String tenantId, @RequestBody EditRequest request) {
 		if (request.content() == null || request.content().isBlank()) {
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Content must not be empty");
 		}
-		String content = this.editService.edit(request.content(),
-				Objects.requireNonNullElse(request.mode(), EditMode.PROOFREADING));
-		return new EditResponse(content);
+		return this.editService
+			.edit(request.content(), Objects.requireNonNullElse(request.mode(), EditMode.PROOFREADING))
+			.map(EditResponse::new);
 	}
 
 	public record EditRequest(@Nullable String content, @Nullable EditMode mode) {

@@ -5,7 +5,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import reactor.core.publisher.Mono;
 
 @Service
 public class EditService {
@@ -22,24 +21,20 @@ public class EditService {
 		this.chatModel = chatModel;
 	}
 
-	public Mono<String> edit(String content, EditMode editMode) {
+	public String edit(String content, EditMode editMode) {
 		logger.info("action=start_edit mode={} model={}", editMode, chatModel);
 		long start = System.currentTimeMillis();
-		return this.chatClient.prompt()
+		String text = this.chatClient.prompt()
 			.system(editMode.systemPrompt())
 			.user(u -> u.text(content))
 			.stream()
 			.content()
 			.collectList()
 			.map(list -> String.join("", list))
-			.doOnSuccess(_ -> {
-				long end = System.currentTimeMillis();
-				logger.info("action=finish_edit mode={} model={} duration={}", editMode, chatModel, end - start);
-			})
-			.doOnError(e -> {
-				long end = System.currentTimeMillis();
-				logger.error("action=error_edit mode={} model={} duration={}", editMode, chatModel, end - start, e);
-			});
+			.block();
+		long end = System.currentTimeMillis();
+		logger.info("action=finish_edit mode={} model={} duration={}", editMode, chatModel, end - start);
+		return text == null ? "" : text;
 	}
 
 }

@@ -2,6 +2,7 @@ package am.ik.blog.s3.web;
 
 import am.ik.blog.S3Props;
 import io.awspring.cloud.s3.S3Template;
+import org.jspecify.annotations.Nullable;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -58,7 +59,7 @@ public class S3Controller {
 		}
 	}
 
-	private String extractExtension(String fileName) {
+	private @Nullable String extractExtension(String fileName) {
 		int lastDotIndex = fileName.lastIndexOf('.');
 		if (lastDotIndex == -1 || lastDotIndex == fileName.length() - 1) {
 			return null;

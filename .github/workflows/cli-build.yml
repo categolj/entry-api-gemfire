@@ -126,7 +126,7 @@ jobs:
         tar czf ../entry-cli-${{ matrix.target }}.${{ matrix.archive-suffix }} entry-cli${{ matrix.binary-suffix }}
 
     - name: Upload artifact
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: entry-cli-${{ matrix.target }}
         path: cli/entry-cli-${{ matrix.target }}.${{ matrix.archive-suffix }}

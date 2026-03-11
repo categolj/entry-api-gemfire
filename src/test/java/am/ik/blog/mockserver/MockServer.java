@@ -23,8 +23,6 @@ public class MockServer implements AutoCloseable {
 
 	private final List<Rule> rules = new ArrayList<>();
 
-	private final int port;
-
 	private final HttpContext context;
 
 	private Response fallbackResponse = Response.notFound();
@@ -36,7 +34,6 @@ public class MockServer implements AutoCloseable {
 		catch (IOException e) {
 			throw new UncheckedIOException(e);
 		}
-		this.port = port;
 		this.context = this.server.createContext("/", new MockHandler());
 		this.server.setExecutor(Executors.newSingleThreadExecutor());
 	}
@@ -46,7 +43,7 @@ public class MockServer implements AutoCloseable {
 	}
 
 	public int port() {
-		return port;
+		return this.server.getAddress().getPort();
 	}
 
 	public MockServer GET(String path, Function<Request, Response> responseFunction) {

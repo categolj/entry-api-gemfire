@@ -4,21 +4,29 @@ import am.ik.blog.GitHubProps;
 import am.ik.blog.entry.EntryService;
 import am.ik.pagination.web.CursorPageRequestHandlerMethodArgumentResolver;
 import am.ik.webhook.spring.WebhookVerifierRequestBodyAdvice;
-import java.time.Instant;
-import java.util.List;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.servlet.config.annotation.ViewControllerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
+import java.time.Instant;
+import java.time.format.DateTimeParseException;
+import java.util.List;
+
 @Configuration(proxyBeanMethods = false)
 class WebConfig implements WebMvcConfigurer {
 
 	@Override
 	public void addArgumentResolvers(List<HandlerMethodArgumentResolver> resolvers) {
-		resolvers.add(new CursorPageRequestHandlerMethodArgumentResolver<>(Instant::parse,
-				props -> props.withSizeDefault(EntryService.DEFAULT_PAGE_SIZE).withSizeMax(1024)));
+		resolvers.add(new CursorPageRequestHandlerMethodArgumentResolver<>(s -> {
+			try {
+				return Instant.parse(s);
+			}
+			catch (DateTimeParseException e) {
+				return Instant.now();
+			}
+		}, props -> props.withSizeDefault(EntryService.DEFAULT_PAGE_SIZE).withSizeMax(1024)));
 	}
 
 	@Override

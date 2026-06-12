@@ -12,14 +12,7 @@ import am.ik.blog.entry.Tag;
 import am.ik.blog.entry.TagAndCount;
 import am.ik.pagination.CursorPage;
 import am.ik.pagination.CursorPageRequest;
-import java.time.Duration;
-import java.time.Instant;
-import java.time.InstantSource;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.function.Function;
+import am.ik.query.parser.QueryParseException;
 import org.jspecify.annotations.Nullable;
 import org.springframework.http.CacheControl;
 import org.springframework.http.MediaType;
@@ -28,6 +21,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -40,6 +34,16 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.time.Duration;
+import java.time.Instant;
+import java.time.InstantSource;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.function.Function;
+
+import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 
 @RestController
@@ -229,6 +233,11 @@ public class EntryController {
 			.updated(Author.builder().name("system").build())
 			.build()
 			.toMarkdown();
+	}
+
+	@ExceptionHandler(QueryParseException.class)
+	public ResponseEntity<?> handleQueryParseException(QueryParseException e) {
+		return ResponseEntity.badRequest().body(ProblemDetail.forStatusAndDetail(BAD_REQUEST, e.getMessage()));
 	}
 
 	@Nullable private <T> ResponseEntity<T> checkNotModified(Entry entry, WebRequest webRequest, Function<Entry, T> mapper,

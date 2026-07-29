@@ -48,8 +48,10 @@ class SummaryControllerTest {
 				"""
 			.formatted(summaryText);
 
-		this.mockServer.POST("/v1/chat/completions",
-				request -> Response.builder().status(200).contentType("text/event-stream").body(sseResponse).build());
+		this.mockServer.POST("/v1/chat/completions", request -> {
+			System.out.println(request.method() + " " + request.path() + " " + request.body());
+			return Response.builder().status(200).contentType("text/event-stream").body(sseResponse).build();
+		});
 	}
 
 	@Test

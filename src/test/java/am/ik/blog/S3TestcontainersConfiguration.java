@@ -9,39 +9,39 @@ import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
 import java.time.Duration;
 
 /**
- * Testcontainers configuration for S3 testing using MinIO.
+ * Testcontainers configuration for S3 testing using RustFS (MinIO compatible).
  */
 @TestConfiguration(proxyBeanMethods = false)
 public class S3TestcontainersConfiguration {
 
 	public static final String BUCKET_NAME = "test-bucket";
 
-	private static final String MINIO_ACCESS_KEY = "minioadmin";
+	private static final String S3_ACCESS_KEY = "rustfsadmin";
 
-	private static final String MINIO_SECRET_KEY = "minioadmin";
+	private static final String S3_SECRET_KEY = "rustfsadmin";
 
-	private static final int MINIO_PORT = 9000;
+	private static final int S3_PORT = 9000;
 
 	@Bean
-	GenericContainer<?> minioContainer() {
-		GenericContainer<?> container = new GenericContainer<>("minio/minio:latest").withExposedPorts(MINIO_PORT)
-			.withEnv("MINIO_ACCESS_KEY", MINIO_ACCESS_KEY)
-			.withEnv("MINIO_SECRET_KEY", MINIO_SECRET_KEY)
-			.withCommand("server", "/data")
-			.waitingFor(new HttpWaitStrategy().forPath("/minio/health/ready")
-				.forPort(MINIO_PORT)
+	GenericContainer<?> s3Container() {
+		GenericContainer<?> container = new GenericContainer<>("rustfs/rustfs:1.0.3").withExposedPorts(S3_PORT)
+			.withEnv("RUSTFS_ACCESS_KEY", S3_ACCESS_KEY)
+			.withEnv("RUSTFS_SECRET_KEY", S3_SECRET_KEY)
+			// Allow browser uploads via presigned URLs from the console
+			.withEnv("RUSTFS_CORS_ALLOWED_ORIGINS", "*")
+			.waitingFor(new HttpWaitStrategy().forPath("/health")
+				.forPort(S3_PORT)
 				.withStartupTimeout(Duration.ofSeconds(60)));
 		container.start();
 		return container;
 	}
 
 	@Bean
-	DynamicPropertyRegistrar s3DynamicPropertyRegistrar(GenericContainer<?> minioContainer) {
+	DynamicPropertyRegistrar s3DynamicPropertyRegistrar(GenericContainer<?> s3Container) {
 		return registry -> {
-			String endpoint = "http://%s:%d".formatted(minioContainer.getHost(),
-					minioContainer.getMappedPort(MINIO_PORT));
-			registry.add("spring.cloud.aws.credentials.access-key", () -> MINIO_ACCESS_KEY);
-			registry.add("spring.cloud.aws.credentials.secret-key", () -> MINIO_SECRET_KEY);
+			String endpoint = "http://%s:%d".formatted(s3Container.getHost(), s3Container.getMappedPort(S3_PORT));
+			registry.add("spring.cloud.aws.credentials.access-key", () -> S3_ACCESS_KEY);
+			registry.add("spring.cloud.aws.credentials.secret-key", () -> S3_SECRET_KEY);
 			registry.add("spring.cloud.aws.s3.endpoint", () -> endpoint);
 			registry.add("spring.cloud.aws.s3.path-style-access-enabled", () -> "true");
 			registry.add("spring.cloud.aws.region.static", () -> "us-east-1");

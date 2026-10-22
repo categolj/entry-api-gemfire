@@ -67,8 +67,8 @@ class S3ControllerTest {
 		assertThat(presignedUrl).isNotNull();
 
 		// Step 2: Upload PNG image using presigned URL
-		RestTestClient minioClient = RestTestClient.bindToServer().build();
-		minioClient.put()
+		RestTestClient s3Client = RestTestClient.bindToServer().build();
+		s3Client.put()
 			.uri(URI.create(presignedUrl))
 			.contentType(MediaType.IMAGE_PNG)
 			.body(imageContent)
@@ -78,7 +78,7 @@ class S3ControllerTest {
 
 		// Step 3: Verify public access
 		String publicUrl = presignedUrl.split("\\?")[0];
-		minioClient.get()
+		s3Client.get()
 			.uri(URI.create(publicUrl))
 			.exchange()
 			.expectStatus()

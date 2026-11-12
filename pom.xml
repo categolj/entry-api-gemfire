@@ -371,7 +371,7 @@
         <version>2.0.1</version>
         <configuration>
           <installDirectory>target</installDirectory>
-          <nodeVersion>v22.19.0</nodeVersion>
+          <nodeVersion>v26.13.1</nodeVersion>
         </configuration>
         <executions>
           <execution>

@@ -78,7 +78,7 @@
     <dependency>
       <groupId>com.vmware.gemfire</groupId>
       <artifactId>gemfire-core</artifactId>
-      <version>10.2.5</version>
+      <version>10.3.4</version>
       <exclusions>
         <exclusion>
           <groupId>com.fasterxml.jackson.core</groupId>

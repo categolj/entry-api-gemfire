@@ -118,15 +118,15 @@ public class EntryService {
 	}
 
 	@Authorized(resource = "entry", requiredPrivileges = Privilege.EDIT)
-	public void updateSummary(@Nullable @P("tenantId") String tenantId, EntryKey entryKey, String summary) {
+	public void updateSummary(@Nullable @P("tenantId") String tenantId, EntryKey entryKey, EntrySummary summary) {
 		if (this.gitHubProps.isDirectUpdate()) {
 			Entry entry = fetchFromGitHub(tenantId, entryKey);
-			FrontMatter updatedFrontMatter = entry.frontMatter().toBuilder().summary(summary).build();
+			FrontMatter updatedFrontMatter = entry.frontMatter().toBuilder().summary(summary.value()).build();
 			Entry updatedEntry = entry.toBuilder().frontMatter(updatedFrontMatter).build();
 			saveToGitHub(tenantId, updatedEntry);
 			return;
 		}
-		entryRepository.updateSummary(entryKey, summary);
+		entryRepository.updateSummary(entryKey, summary.value());
 	}
 
 	private Entry saveToGitHub(@Nullable String tenantId, Entry entry) {
@@ -212,7 +212,9 @@ public class EntryService {
 			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Entry not found: " + entryKey);
 		}
 		Author unknownAuthor = Author.builder().name("unknown").build();
-		return this.entryParser.fromMarkdown(entryKey, file.decode(), unknownAuthor, unknownAuthor).build();
+		return this.entryParser
+			.fromMarkdown(entryKey, Markdown.SCHEMA.validated(file.decode()), unknownAuthor, unknownAuthor)
+			.build();
 	}
 
 	private String getFilePath(EntryKey entryKey) {

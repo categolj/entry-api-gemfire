@@ -23,7 +23,7 @@ public class SummaryService {
 		this.chatModel = chatModel;
 	}
 
-	public String summarize(String content) {
+	public String summarize(SummaryContent content) {
 		logger.info("action=start_summarization model={}", chatModel);
 		long start = System.currentTimeMillis();
 		String text = Objects.requireNonNull(this.chatClient.prompt()
@@ -32,7 +32,7 @@ public class SummaryService {
 					Use the same language as the input text. Do not include markdown/HTML in the summary text. Also do not use markup such as `code` formatting. The summary should be in a format that introduces the blog article, such as "This is an article about..." or "In this article...".
 					Your response should contain only the summary text and nothing else.
 					""")
-			.user(u -> u.text(content))
+			.user(u -> u.text(content.value()))
 			.stream()
 			.content()
 			.collectList()

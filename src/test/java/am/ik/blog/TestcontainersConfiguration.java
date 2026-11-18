@@ -22,7 +22,14 @@ public class TestcontainersConfiguration {
 
 	@Bean
 	DynamicPropertyRegistrar dynamicPropertyRegistrar(GemFireCluster cluster) {
-		return registry -> registry.add("gemfire.locators", () -> "127.0.0.1:%d".formatted(cluster.getLocatorPort()));
+		return registry -> {
+			registry.add("gemfire.locators", () -> "127.0.0.1:%d".formatted(cluster.getLocatorPort()));
+			// The test cluster does not use TLS, so disable TLS for every component (an
+			// empty value means none). This keeps a local settings file such as
+			// application-default.properties, which points at a TLS-enabled remote
+			// cluster, from breaking the tests.
+			registry.add("gemfire.properties.ssl-enabled-components", () -> "");
+		};
 	}
 
 }

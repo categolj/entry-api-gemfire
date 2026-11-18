@@ -33,3 +33,5 @@ build/
 .vscode/
 
 application-default.properties
+.claude
+

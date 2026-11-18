@@ -16,8 +16,8 @@ public class EntryParser {
 		this.jsonMapper = jsonMapper;
 	}
 
-	public Entry.Builder fromMarkdown(EntryKey entryKey, String markdown, Author created, Author updated) {
-		Map<String, Object> json = MarkdownToJson.convert(markdown);
+	public Entry.Builder fromMarkdown(EntryKey entryKey, Markdown markdown, Author created, Author updated) {
+		Map<String, Object> json = MarkdownToJson.convert(markdown.value());
 		Map<String, Object> frontMatter = (Map<String, Object>) json.get("frontMatter");
 		Assert.notNull(frontMatter, "FrontMatter must not be null");
 		return this.jsonMapper.convertValue(json, Entry.class)

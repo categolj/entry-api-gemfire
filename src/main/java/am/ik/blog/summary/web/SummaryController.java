@@ -1,15 +1,20 @@
 package am.ik.blog.summary.web;
 
+import am.ik.blog.json.JsonNodeReader;
+import am.ik.blog.summary.SummaryContent;
 import am.ik.blog.summary.SummaryService;
-import org.springframework.http.HttpStatus;
+import am.ik.yavi.core.ValueValidator;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.server.ResponseStatusException;
+import tools.jackson.databind.JsonNode;
 
 @RestController
 public class SummaryController {
+
+	static final ValueValidator<JsonNode, SummaryContent> VALIDATOR = SummaryContent.SCHEMA
+		.readingWith(JsonNodeReader.INSTANCE);
 
 	private final SummaryService summaryService;
 
@@ -18,16 +23,9 @@ public class SummaryController {
 	}
 
 	@PostMapping(path = "/tenants/{tenantId}/summary")
-	public SummaryResponse summarize(@PathVariable String tenantId, @RequestBody SummaryRequest request) {
-		if (request.content() == null || request.content().isBlank()) {
-			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Content must not be empty");
-		}
-		String summary = this.summaryService.summarize(request.content());
-		return new SummaryResponse(summary);
-	}
-
-	public record SummaryRequest(String content) {
-
+	public SummaryResponse summarize(@PathVariable String tenantId, @RequestBody JsonNode body) {
+		SummaryContent content = VALIDATOR.validated(body);
+		return new SummaryResponse(this.summaryService.summarize(content));
 	}
 
 	public record SummaryResponse(String summary) {

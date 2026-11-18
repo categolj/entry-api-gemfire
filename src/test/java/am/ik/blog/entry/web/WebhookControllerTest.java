@@ -16,6 +16,7 @@ import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,6 +55,9 @@ class WebhookControllerTest {
 	@Autowired
 	MockServer mockServer;
 
+	@Autowired
+	WebhookController webhookController;
+
 	@LocalServerPort
 	int port;
 
@@ -73,6 +77,14 @@ class WebhookControllerTest {
 						}
 						""")
 				.build());
+	}
+
+	@Test
+	void processWebhook_invalidPayload_returnsEmpty() {
+		assertThat(this.webhookController.processWebhook("not json", null)).isEmpty();
+		assertThat(this.webhookController.processWebhook("{}", null)).isEmpty();
+		assertThat(this.webhookController.processWebhook("{\"repository\": {\"full_name\": \"owner/repo\"}}", null))
+			.isEmpty();
 	}
 
 	@ParameterizedTest

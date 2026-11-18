@@ -4,6 +4,8 @@ import am.ik.blog.MockConfig;
 import am.ik.blog.S3TestcontainersConfiguration;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.context.annotation.Import;
@@ -98,6 +100,21 @@ class S3ControllerTest {
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		ImageIO.write(image, "png", baos);
 		return baos.toByteArray();
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = { "", "test.txt", "../test.png", "noextension" })
+	void presign_invalidFileName_returnsBadRequest(String fileName) {
+		this.client.post()
+			.uri("/tenants/{tenantId}/s3/presign", "_")
+			.headers(headers -> headers.setBasicAuth("editor", "password"))
+			.contentType(MediaType.APPLICATION_JSON)
+			.body("""
+					{"fileName": "%s"}
+					""".formatted(fileName))
+			.exchange()
+			.expectStatus()
+			.isBadRequest();
 	}
 
 	@Test

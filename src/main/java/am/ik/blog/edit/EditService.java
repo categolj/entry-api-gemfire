@@ -21,12 +21,13 @@ public class EditService {
 		this.chatModel = chatModel;
 	}
 
-	public String edit(String content, EditMode editMode) {
+	public String edit(EditCommand command) {
+		EditMode editMode = command.mode();
 		logger.info("action=start_edit mode={} model={}", editMode, chatModel);
 		long start = System.currentTimeMillis();
 		String text = this.chatClient.prompt()
 			.system(editMode.systemPrompt())
-			.user(u -> u.text(content))
+			.user(u -> u.text(command.content()))
 			.stream()
 			.content()
 			.collectList()

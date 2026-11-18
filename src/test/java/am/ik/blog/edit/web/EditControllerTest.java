@@ -5,6 +5,8 @@ import am.ik.blog.mockserver.MockServer;
 import am.ik.blog.mockserver.MockServer.Response;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
@@ -132,49 +134,14 @@ class EditControllerTest {
 			.isEqualTo(editedText);
 	}
 
-	@Test
-	void edit_emptyContent_returnsBadRequest() {
+	@ParameterizedTest
+	@ValueSource(strings = { "{\"content\": \"\"}", "{\"content\": \"   \"}", "{\"content\": null}", "{}" })
+	void edit_invalidContent_returnsBadRequest(String body) {
 		this.client.post()
 			.uri("/tenants/{tenantId}/edit", "_")
 			.headers(headers -> headers.setBasicAuth("admin", "changeme"))
 			.contentType(MediaType.APPLICATION_JSON)
-			.body("""
-					{"content": ""}
-					""")
-			.exchange()
-			.expectStatus()
-			.isBadRequest()
-			.expectBody()
-			.jsonPath("$.detail")
-			.isEqualTo("Content must not be empty");
-	}
-
-	@Test
-	void edit_blankContent_returnsBadRequest() {
-		this.client.post()
-			.uri("/tenants/{tenantId}/edit", "_")
-			.headers(headers -> headers.setBasicAuth("admin", "changeme"))
-			.contentType(MediaType.APPLICATION_JSON)
-			.body("""
-					{"content": "   "}
-					""")
-			.exchange()
-			.expectStatus()
-			.isBadRequest()
-			.expectBody()
-			.jsonPath("$.detail")
-			.isEqualTo("Content must not be empty");
-	}
-
-	@Test
-	void edit_nullContent_returnsBadRequest() {
-		this.client.post()
-			.uri("/tenants/{tenantId}/edit", "_")
-			.headers(headers -> headers.setBasicAuth("admin", "changeme"))
-			.contentType(MediaType.APPLICATION_JSON)
-			.body("""
-					{"content": null}
-					""")
+			.body(body)
 			.exchange()
 			.expectStatus()
 			.isBadRequest()

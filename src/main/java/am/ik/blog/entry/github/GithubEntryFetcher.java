@@ -5,6 +5,7 @@ import am.ik.blog.entry.Entry;
 import am.ik.blog.entry.EntryFetcher;
 import am.ik.blog.entry.EntryKey;
 import am.ik.blog.entry.EntryParser;
+import am.ik.blog.entry.Markdown;
 import am.ik.blog.github.Commit;
 import am.ik.blog.github.CommitParameter;
 import am.ik.blog.github.File;
@@ -62,7 +63,9 @@ public class GithubEntryFetcher implements EntryFetcher {
 			Author created = commits.isEmpty() ? Author.builder().name("unknown").build() : toAuthor(commits.getLast());
 			Author updated = commits.isEmpty() ? Author.builder().name("unknown").build()
 					: toAuthor(commits.getFirst());
-			return Optional.of(this.entryParser.fromMarkdown(entryKey, file.decode(), created, updated).build());
+			return Optional
+				.of(this.entryParser.fromMarkdown(entryKey, Markdown.SCHEMA.validated(file.decode()), created, updated)
+					.build());
 		}
 		else if (statusCode.is4xxClientError()) {
 			logger.info("Failed to retrieve file statusCode: {}, tenantId: {}, owner: {}, repo: {}, path: {}",

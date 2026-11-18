@@ -28,6 +28,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
+import tools.jackson.core.JacksonException;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
 
@@ -84,13 +85,23 @@ public class WebhookController {
 	}
 
 	Optional<List<Map<String, EntryKey>>> processWebhook(String payload, @Nullable String tenantId) {
-		final JsonNode node = this.jsonMapper.readValue(payload, JsonNode.class);
-		final String[] repository = node.get("repository").get("full_name").asText().split("/", 2);
-		final String owner = repository[0];
-		final String repo = repository[1];
-		if (!node.has("commits")) {
+		final JsonNode node;
+		try {
+			node = this.jsonMapper.readValue(payload, JsonNode.class);
+		}
+		catch (JacksonException e) {
 			return Optional.empty();
 		}
+		final JsonNode repository = node.get("repository");
+		if (repository == null || !repository.hasNonNull("full_name") || !node.has("commits")) {
+			return Optional.empty();
+		}
+		final String[] ownerAndRepo = repository.get("full_name").asText().split("/", 2);
+		if (ownerAndRepo.length != 2) {
+			return Optional.empty();
+		}
+		final String owner = ownerAndRepo[0];
+		final String repo = ownerAndRepo[1];
 		final Stream<JsonNode> commits = StreamSupport.stream(node.get("commits").spliterator(), false);
 		final List<Map<String, EntryKey>> result = new ArrayList<>();
 		final List<EntryKey> updatedEntries = new ArrayList<>();
@@ -132,8 +143,8 @@ public class WebhookController {
 		return Optional.of(result);
 	}
 
-	Stream<String> paths(JsonNode paths) {
-		return StreamSupport.stream(paths.spliterator(), false).map(JsonNode::asText);
+	Stream<String> paths(@Nullable JsonNode paths) {
+		return paths == null ? Stream.empty() : StreamSupport.stream(paths.spliterator(), false).map(JsonNode::asText);
 	}
 
 }

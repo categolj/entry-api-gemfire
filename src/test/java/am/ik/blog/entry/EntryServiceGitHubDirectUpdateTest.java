@@ -8,6 +8,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.Base64;
 import java.util.List;
+import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -384,7 +385,8 @@ class EntryServiceGitHubDirectUpdateTest {
 		this.mockServer.PUT("/repos/test-owner/test-repo/contents/content/00005.md",
 				request -> MockServer.Response.json(updateResponse));
 
-		this.entryService.updateSummary(null, entryKey, "This is a new summary");
+		this.entryService.updateSummary(null, entryKey,
+				EntrySummary.SCHEMA.validated(Map.of("summary", "This is a new summary")));
 
 		// updateSummary should not be called directly, but save should be called
 		verify(this.entryRepository, never()).updateSummary(entryKey, "This is a new summary");
@@ -396,7 +398,8 @@ class EntryServiceGitHubDirectUpdateTest {
 	void updateSummary_shouldThrowExceptionWhenFileNotFound() {
 		EntryKey entryKey = new EntryKey(6L, null);
 
-		assertThatThrownBy(() -> this.entryService.updateSummary(null, entryKey, "Some summary"))
+		assertThatThrownBy(() -> this.entryService.updateSummary(null, entryKey,
+				EntrySummary.SCHEMA.validated(Map.of("summary", "Some summary"))))
 			.isInstanceOf(ResponseStatusException.class)
 			.hasMessageContaining("Entry not found");
 
@@ -409,7 +412,8 @@ class EntryServiceGitHubDirectUpdateTest {
 		try {
 			EntryKey entryKey = new EntryKey(7L, null);
 
-			this.entryService.updateSummary(null, entryKey, "Some summary");
+			this.entryService.updateSummary(null, entryKey,
+					EntrySummary.SCHEMA.validated(Map.of("summary", "Some summary")));
 
 			verify(this.entryRepository).updateSummary(entryKey, "Some summary");
 		}

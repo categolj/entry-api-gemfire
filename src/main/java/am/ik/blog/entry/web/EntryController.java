@@ -6,13 +6,17 @@ import am.ik.blog.entry.Entry;
 import am.ik.blog.entry.EntryKey;
 import am.ik.blog.entry.EntryParser;
 import am.ik.blog.entry.EntryService;
+import am.ik.blog.entry.EntrySummary;
 import am.ik.blog.entry.FrontMatter;
+import am.ik.blog.entry.Markdown;
 import am.ik.blog.entry.SearchCriteria;
 import am.ik.blog.entry.Tag;
 import am.ik.blog.entry.TagAndCount;
+import am.ik.blog.json.JsonNodeReader;
 import am.ik.pagination.CursorPage;
 import am.ik.pagination.CursorPageRequest;
 import am.ik.query.parser.QueryParseException;
+import am.ik.yavi.core.ValueValidator;
 import org.jspecify.annotations.Nullable;
 import org.springframework.http.CacheControl;
 import org.springframework.http.MediaType;
@@ -33,6 +37,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.util.UriComponentsBuilder;
+import tools.jackson.databind.JsonNode;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -48,6 +53,9 @@ import static org.springframework.http.HttpStatus.NOT_FOUND;
 
 @RestController
 public class EntryController {
+
+	static final ValueValidator<JsonNode, EntrySummary> SUMMARY_VALIDATOR = EntrySummary.SCHEMA
+		.readingWith(JsonNodeReader.INSTANCE);
 
 	private final EntryService entryService;
 
@@ -109,11 +117,12 @@ public class EntryController {
 	public ResponseEntity<Entry> postEntryFromMarkdown(@PathVariable(required = false) String tenantId,
 			@RequestBody String markdown, @AuthenticationPrincipal UserDetails userDetails,
 			UriComponentsBuilder builder) {
+		Markdown content = Markdown.SCHEMA.validated(markdown);
 		Instant now = this.instantSource.instant();
 		Author created = Author.builder().name(userDetails.getUsername()).date(now).build();
 		Long entryId = this.entryService.nextId(tenantId);
 		EntryKey entryKey = new EntryKey(entryId, tenantId);
-		Entry entry = this.entryParser.fromMarkdown(entryKey, markdown, created, created).build();
+		Entry entry = this.entryParser.fromMarkdown(entryKey, content, created, created).build();
 		Entry saved = this.entryService.save(tenantId, entry);
 		String path = tenantId == null ? "/entries/{entryId:\\d+}" : "/tenants/{tenantId}/entries/{entryId:\\d+}";
 		return ResponseEntity
@@ -127,11 +136,12 @@ public class EntryController {
 	public ResponseEntity<Entry> putEntryFromMarkdown(@PathVariable Long entryId,
 			@PathVariable(required = false) String tenantId, @RequestBody String markdown,
 			@AuthenticationPrincipal UserDetails userDetails) {
+		Markdown content = Markdown.SCHEMA.validated(markdown);
 		EntryKey entryKey = new EntryKey(entryId, tenantId);
 		Instant now = this.instantSource.instant();
 		Author updated = Author.builder().name(userDetails.getUsername()).date(now).build();
 		Author created = this.entryService.findById(tenantId, entryKey).map(Entry::created).orElse(updated);
-		Entry entry = this.entryParser.fromMarkdown(entryKey, markdown, created, updated).build();
+		Entry entry = this.entryParser.fromMarkdown(entryKey, content, created, updated).build();
 		Entry saved = this.entryService.save(tenantId, entry);
 		return ResponseEntity.ok(saved);
 	}
@@ -139,14 +149,15 @@ public class EntryController {
 	@PatchMapping(path = { "/entries/{entryId:\\d+}/summary", "/tenants/{tenantId}/entries/{entryId:\\d+}/summary" },
 			consumes = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> patchEntrySummary(@PathVariable Long entryId,
-			@PathVariable(required = false) String tenantId, @RequestBody EntrySummaryPatchRequest request,
+			@PathVariable(required = false) String tenantId, @RequestBody JsonNode body,
 			@AuthenticationPrincipal UserDetails userDetails) {
+		EntrySummary summary = SUMMARY_VALIDATOR.validated(body);
 		EntryKey entryKey = new EntryKey(entryId, tenantId);
 		Optional<Entry> entry = this.entryService.findById(tenantId, entryKey);
 		if (entry.isPresent()) {
-			this.entryService.updateSummary(tenantId, entryKey, request.summary());
+			this.entryService.updateSummary(tenantId, entryKey, summary);
 			return ResponseEntity.ok(entry.map(e -> e.toBuilder()
-				.frontMatter(e.frontMatter().toBuilder().summary(request.summary()).build())
+				.frontMatter(e.frontMatter().toBuilder().summary(summary.value()).build())
 				.build()));
 		}
 		else {
@@ -258,10 +269,6 @@ public class EntryController {
 	private ResponseEntity<?> entryNotFound(EntryKey entryKey) {
 		return ResponseEntity.status(NOT_FOUND)
 			.body(ProblemDetail.forStatusAndDetail(NOT_FOUND, "Entry not found: " + entryKey));
-	}
-
-	public record EntrySummaryPatchRequest(String summary) {
-
 	}
 
 }

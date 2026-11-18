@@ -21,6 +21,7 @@ import java.util.function.Consumer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
@@ -677,6 +678,33 @@ class EntryControllerTest {
 		assertThat(entry.updated().name()).isEqualTo(entry1.updated().name());
 		assertThat(this.entryRepository.findById(entry1.entryKey()))
 			.hasValueSatisfying(e -> assertThat(e.frontMatter().summary()).isEqualTo(frontMatter.summary()));
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = { "{\"summary\": \"\"}", "{\"summary\": \"   \"}", "{\"summary\": null}", "{}" })
+	void patchEntrySummary_invalidSummary_returnsBadRequest(String body) {
+		prepareMockData(null);
+		var response = this.restClient.patch()
+			.uri("/entries/{entryId}/summary", ENTRY1.entryKey().entryId())
+			.contentType(MediaType.APPLICATION_JSON)
+			.headers(configureAuth("editor", "password"))
+			.body(body)
+			.retrieve()
+			.toBodilessEntity();
+		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = { "", "   ", "no front matter" })
+	void postEntryFromMarkdown_invalidMarkdown_returnsBadRequest(String markdown) {
+		var response = this.restClient.post()
+			.uri("/entries")
+			.contentType(MediaType.TEXT_MARKDOWN)
+			.headers(configureAuth("editor", "password"))
+			.body(markdown)
+			.retrieve()
+			.toBodilessEntity();
+		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
 	}
 
 	@ParameterizedTest

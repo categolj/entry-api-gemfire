@@ -2,6 +2,7 @@ package am.ik.blog.e2e.page;
 
 import java.util.Arrays;
 import java.util.Base64;
+import java.util.regex.Pattern;
 
 import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.Page;
@@ -21,14 +22,22 @@ public class EntryFormPage extends BasePage {
 
 	@Override
 	public void waitForLoad() {
-		page.getByLabel("Title *").waitFor();
+		titleField().waitFor();
+	}
+
+	private Locator titleField() {
+		return page.getByLabel("Title", new Page.GetByLabelOptions().setExact(true));
+	}
+
+	private Locator summaryField() {
+		return page.getByPlaceholder(Pattern.compile("One or two sentences"));
 	}
 
 	/**
 	 * Fill in the title field.
 	 */
 	public EntryFormPage fillTitle(String title) {
-		page.getByLabel("Title *").fill(title);
+		titleField().fill(title);
 		return this;
 	}
 
@@ -36,7 +45,7 @@ public class EntryFormPage extends BasePage {
 	 * Verify the title field contains the expected text.
 	 */
 	public EntryFormPage verifyTitle(String expectedTitle) {
-		assertThat(page.getByLabel("Title *")).hasValue(expectedTitle);
+		assertThat(titleField()).hasValue(expectedTitle);
 		return this;
 	}
 
@@ -45,7 +54,7 @@ public class EntryFormPage extends BasePage {
 	 */
 	public EntryFormPage addCategory(String category) {
 		page.getByLabel("Categories").fill(category);
-		page.locator("button:has-text('Add')").first().click();
+		page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Add").setExact(true)).click();
 		return this;
 	}
 
@@ -92,7 +101,7 @@ public class EntryFormPage extends BasePage {
 	 * Fill in the summary field.
 	 */
 	public EntryFormPage fillSummary(String summary) {
-		page.getByPlaceholder("Brief description of the entry").fill(summary);
+		summaryField().fill(summary);
 		return this;
 	}
 
@@ -100,14 +109,14 @@ public class EntryFormPage extends BasePage {
 	 * Get the current summary text.
 	 */
 	public String getSummary() {
-		return page.getByPlaceholder("Brief description of the entry").inputValue();
+		return summaryField().inputValue();
 	}
 
 	/**
 	 * Verify the summary field contains the expected text.
 	 */
 	public EntryFormPage verifySummary(String expectedSummary) {
-		assertThat(page.getByPlaceholder("Brief description of the entry")).hasValue(expectedSummary);
+		assertThat(summaryField()).hasValue(expectedSummary);
 		return this;
 	}
 
@@ -115,29 +124,29 @@ public class EntryFormPage extends BasePage {
 	 * Fill in the Entry ID field (for loading existing entries).
 	 */
 	public EntryFormPage fillEntryId(String entryId) {
-		page.getByLabel("Entry ID (Optional)").fill(entryId);
+		page.getByLabel("Entry ID (optional)").fill(entryId);
 		return this;
 	}
 
 	/**
-	 * Click the Load button to load an existing entry.
+	 * Click the Load entry button to load an existing entry.
 	 */
 	public EntryFormPage clickLoad() {
-		page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Load").setExact(true)).click();
+		page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Load entry")).click();
 		// Wait for loading to complete (button becomes enabled again)
-		page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Load").setExact(true))
+		page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Load entry"))
 			.and(page.locator(":not([disabled])"))
 			.waitFor();
 		return this;
 	}
 
 	/**
-	 * Click the Auto Generate button to generate summary.
+	 * Click the Write with AI button to generate summary.
 	 */
 	public EntryFormPage clickAutoGenerateSummary() {
-		page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Auto Generate")).click();
+		page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Write with AI")).click();
 		// Wait for summarization to complete (button becomes enabled again)
-		page.locator("button:has-text('Auto Generate'):not([disabled])").waitFor();
+		page.locator("button:has-text('Write with AI'):not([disabled])").waitFor();
 		return this;
 	}
 
@@ -150,30 +159,30 @@ public class EntryFormPage extends BasePage {
 	}
 
 	/**
-	 * Click the Load Template button to load the template.
+	 * Click the Load template button to load the template.
 	 */
 	public EntryFormPage clickLoadTemplate() {
-		page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Load Template")).click();
+		page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Load template")).click();
 		// Wait for loading to complete (button becomes enabled again)
-		page.locator("button:has-text('Load Template'):not([disabled])").waitFor();
+		page.locator("button:has-text('Load template'):not([disabled])").waitFor();
 		return this;
 	}
 
 	/**
-	 * Click the Preview & Create button.
+	 * Click the Preview and create button.
 	 */
 	public EntryPreviewPage clickPreviewAndCreate() {
-		page.locator("button:has-text('Preview & Create'):not([disabled])").waitFor();
-		page.click("button:has-text('Preview & Create')");
+		page.locator("button:has-text('Preview and create'):not([disabled])").waitFor();
+		page.click("button:has-text('Preview and create')");
 		return new EntryPreviewPage(page, baseUrl);
 	}
 
 	/**
-	 * Click the Preview & Update button.
+	 * Click the Preview and update button.
 	 */
 	public EntryPreviewPage clickPreviewAndUpdate() {
-		page.locator("button:has-text('Preview & Update'):not([disabled])").waitFor();
-		page.click("button:has-text('Preview & Update')");
+		page.locator("button:has-text('Preview and update'):not([disabled])").waitFor();
+		page.click("button:has-text('Preview and update')");
 		return new EntryPreviewPage(page, baseUrl);
 	}
 
@@ -190,7 +199,7 @@ public class EntryFormPage extends BasePage {
 	 * Verify this is the create entry page.
 	 */
 	public EntryFormPage verifyCreatePageDisplayed() {
-		assertThat(page.locator("h1")).containsText("Create New Entry");
+		assertThat(page.locator("h1")).containsText("New entry");
 		return this;
 	}
 
@@ -198,7 +207,7 @@ public class EntryFormPage extends BasePage {
 	 * Verify this is the edit entry page.
 	 */
 	public EntryFormPage verifyEditPageDisplayed() {
-		assertThat(page.locator("h1")).containsText("Edit Entry");
+		assertThat(page.locator("h1")).containsText("Edit entry");
 		return this;
 	}
 
@@ -296,7 +305,7 @@ public class EntryFormPage extends BasePage {
 	 */
 	public EntryFormPage waitForUploadComplete() {
 		// Wait for uploading indicator to disappear
-		page.locator("text=Uploading image...")
+		page.locator("text=Uploading image")
 			.waitFor(new Locator.WaitForOptions().setState(WaitForSelectorState.HIDDEN));
 		return this;
 	}
@@ -306,10 +315,7 @@ public class EntryFormPage extends BasePage {
 	 * @return this page object for chaining
 	 */
 	public EntryFormPage verifyContentContainsImageMarkdown() {
-		Locator contentEditor = page.locator(".w-md-editor-text-input");
-		String content = contentEditor.inputValue();
-		assertThat(page.locator(".w-md-editor-text-input"))
-			.hasValue(java.util.regex.Pattern.compile("!\\[.*?\\]\\(.*?\\)"));
+		assertThat(page.locator(".w-md-editor-text-input")).hasValue(Pattern.compile("!\\[.*?\\]\\(.*?\\)"));
 		return this;
 	}
 
@@ -354,32 +360,32 @@ public class EntryFormPage extends BasePage {
 	}
 
 	/**
-	 * Click the AI Editing button.
+	 * Click the AI revise button.
 	 * @return this page object for chaining
 	 */
 	public EntryFormPage clickAIEditingButton() {
-		page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("AI Editing")).click();
+		page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("AI revise")).click();
 		return this;
 	}
 
 	/**
-	 * Select the edit mode from the dropdown.
+	 * Select the revision kind in the AI dialog.
 	 * @param mode the mode to select (e.g., "PROOFREADING", "COMPLETION", "EXPANSION")
 	 * @return this page object for chaining
 	 */
 	public EntryFormPage selectEditMode(String mode) {
-		page.locator("#edit-mode-select").selectOption(mode);
+		page.locator("#ai-mode-" + mode).check();
 		return this;
 	}
 
 	/**
-	 * Click the Run button in the AI Editing dialog.
+	 * Click the Run revision button in the AI dialog.
 	 * @return this page object for chaining
 	 */
 	public EntryFormPage clickRunButton() {
-		page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Run").setExact(true)).click();
-		// Wait for loading to complete (Apply Changes button becomes enabled)
-		page.locator("button:has-text('Apply Changes'):not([disabled])").waitFor();
+		page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Run revision")).click();
+		// Wait for loading to complete (Apply changes button becomes enabled)
+		page.locator("button:has-text('Apply changes'):not([disabled])").waitFor();
 		return this;
 	}
 
@@ -388,30 +394,29 @@ public class EntryFormPage extends BasePage {
 	 * @return this page object for chaining
 	 */
 	public EntryFormPage verifyDiffDialogDisplayed() {
-		assertThat(page.locator("text=Changes Preview")).isVisible();
+		assertThat(page.getByText("Proposed changes", new Page.GetByTextOptions().setExact(true))).isVisible();
 		return this;
 	}
 
 	/**
-	 * Click the Apply Changes button in the AI Editing dialog.
+	 * Click the Apply changes button in the AI dialog.
 	 * @return this page object for chaining
 	 */
 	public EntryFormPage clickApplyChangesButton() {
-		page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Apply Changes")).click();
-		// Wait for dialog to close (check for the dialog overlay to be hidden)
-		page.locator(".fixed.inset-0").waitFor(new Locator.WaitForOptions().setState(WaitForSelectorState.HIDDEN));
+		page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Apply changes")).click();
+		// Wait for dialog to close
+		page.locator("[role='dialog']").waitFor(new Locator.WaitForOptions().setState(WaitForSelectorState.HIDDEN));
 		return this;
 	}
 
 	/**
-	 * Click the Cancel button in the AI Editing dialog.
+	 * Click the Cancel button in the AI dialog.
 	 * @return this page object for chaining
 	 */
 	public EntryFormPage clickEditingCancelButton() {
-		// Click the Cancel button within the dialog
-		page.locator(".fixed button:has-text('Cancel')").click();
-		// Wait for dialog to close (check for the dialog overlay to be hidden)
-		page.locator(".fixed.inset-0").waitFor(new Locator.WaitForOptions().setState(WaitForSelectorState.HIDDEN));
+		page.locator("[role='dialog'] button:has-text('Cancel')").click();
+		// Wait for dialog to close
+		page.locator("[role='dialog']").waitFor(new Locator.WaitForOptions().setState(WaitForSelectorState.HIDDEN));
 		return this;
 	}
 
@@ -421,8 +426,7 @@ public class EntryFormPage extends BasePage {
 	 * @return this page object for chaining
 	 */
 	public EntryFormPage verifyContentContains(String expectedText) {
-		Locator contentEditor = page.locator(".w-md-editor-text-input");
-		assertThat(contentEditor).containsText(expectedText);
+		assertThat(page.locator(".w-md-editor-text-input")).containsText(expectedText);
 		return this;
 	}
 
@@ -431,8 +435,7 @@ public class EntryFormPage extends BasePage {
 	 * @return the content text
 	 */
 	public String getContent() {
-		Locator contentEditor = page.locator(".w-md-editor-text-input");
-		return contentEditor.inputValue();
+		return page.locator(".w-md-editor-text-input").inputValue();
 	}
 
 }

@@ -29,7 +29,7 @@ export function EntryDetail() {
         await api.deleteEntry(tenant, entry.entryId);
         // Invalidate all SWR cache to ensure entry list is refreshed
         await mutate(() => true);
-        navigate(`/console/${tenant}`);
+        await navigate(`/console/${tenant}`);
       } catch (error) {
         console.error('Failed to delete entry:', error);
         // Error will be handled by the API layer

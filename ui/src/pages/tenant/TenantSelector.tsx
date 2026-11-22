@@ -32,7 +32,7 @@ export function TenantSelector() {
   useEffect(() => {
     const state = location.state as LocationState | undefined;
     if (auth.isAuthenticated && state?.from) {
-      navigate(state.from.pathname, { replace: true });
+      void navigate(state.from.pathname, { replace: true });
     }
   }, [auth.isAuthenticated, location.state, navigate]);
 
@@ -66,7 +66,7 @@ export function TenantSelector() {
 
       // If successful, reset redirect flag and navigate to the console
       setSkipAuthRedirect(false);
-      navigate(`/console/${tenantId}`);
+      await navigate(`/console/${tenantId}`);
     } catch (error) {
       // Reset redirect flag
       setSkipAuthRedirect(false);

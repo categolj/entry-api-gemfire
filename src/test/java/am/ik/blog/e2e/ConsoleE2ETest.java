@@ -235,7 +235,7 @@ class ConsoleE2ETest {
 		formPage3.createEntry("Spring Boot Introduction", "Getting started with Spring Boot");
 
 		// Navigate back to entry list
-		page.click("a:has-text('Entries')");
+		page.click("aside a:has-text('Entries')");
 		entryListPage.waitForLoad();
 
 		// Verify all 3 entries are displayed

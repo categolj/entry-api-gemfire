@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useId } from 'react';
 
 interface CategoryInputProps {
   label?: string;
@@ -18,7 +18,7 @@ export function CategoryInput({
   disabled = false,
 }: CategoryInputProps) {
   const [inputValue, setInputValue] = useState('');
-  const inputId = `category-input-${Math.random().toString(36).substr(2, 9)}`;
+  const inputId = useId();
 
   const addCategory = () => {
     const trimmedValue = inputValue.trim();

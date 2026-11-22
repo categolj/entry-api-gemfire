@@ -1,4 +1,4 @@
-import React, { useState, KeyboardEvent } from 'react';
+import React, { useState, useId, KeyboardEvent } from 'react';
 
 interface TagInputProps {
   label?: string;
@@ -18,7 +18,7 @@ export function TagInput({
   disabled = false,
 }: TagInputProps) {
   const [inputValue, setInputValue] = useState('');
-  const inputId = `tag-input-${Math.random().toString(36).substr(2, 9)}`;
+  const inputId = useId();
 
   const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
     if (disabled) return;

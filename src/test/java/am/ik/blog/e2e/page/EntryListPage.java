@@ -1,6 +1,9 @@
 package am.ik.blog.e2e.page;
 
+import java.util.regex.Pattern;
+
 import com.microsoft.playwright.Page;
+import com.microsoft.playwright.options.AriaRole;
 
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
 
@@ -19,19 +22,19 @@ public class EntryListPage extends BasePage {
 	}
 
 	/**
-	 * Click the "Create your first entry" button when no entries exist.
+	 * Click the "Write an entry" button when no entries exist.
 	 */
 	public EntryFormPage clickCreateFirstEntry() {
-		page.click("a:has-text('Create your first entry')");
+		page.getByRole(AriaRole.LINK, new Page.GetByRoleOptions().setName("Write an entry")).click();
 		page.waitForURL("**/console/_/entries/new");
 		return new EntryFormPage(page, baseUrl);
 	}
 
 	/**
-	 * Click the "New" link in the navigation to create a new entry.
+	 * Click the "New entry" link in the navigation to create a new entry.
 	 */
 	public EntryFormPage clickNewEntry() {
-		page.click("a:has-text('New')");
+		page.getByRole(AriaRole.LINK, new Page.GetByRoleOptions().setName("New entry")).first().click();
 		page.waitForURL("**/console/_/entries/new");
 		return new EntryFormPage(page, baseUrl);
 	}
@@ -54,18 +57,18 @@ public class EntryListPage extends BasePage {
 	}
 
 	/**
-	 * Verify the "No entries found" message is displayed.
+	 * Verify the empty ledger message is displayed.
 	 */
 	public EntryListPage verifyNoEntriesMessage() {
-		assertThat(page.locator("text=No entries found")).isVisible();
+		assertThat(page.locator("text=The ledger is empty.")).isVisible();
 		return this;
 	}
 
 	/**
-	 * Verify the "Create your first entry" button is visible.
+	 * Verify the "Write an entry" button is visible.
 	 */
 	public EntryListPage verifyCreateFirstEntryButtonVisible() {
-		assertThat(page.locator("button:has-text('Create your first entry')")).isVisible();
+		assertThat(page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Write an entry"))).isVisible();
 		return this;
 	}
 
@@ -81,7 +84,7 @@ public class EntryListPage extends BasePage {
 	 * Verify an entry with the given title does not exist in the list.
 	 */
 	public EntryListPage verifyEntryNotExists(String title) {
-		assertThat(page.locator(".entry-card:has-text('" + title + "')")).hasCount(0);
+		assertThat(page.locator(".ledger-row:has-text('" + title + "')")).hasCount(0);
 		return this;
 	}
 
@@ -89,8 +92,8 @@ public class EntryListPage extends BasePage {
 	 * Search for entries by query.
 	 */
 	public EntryListPage search(String query) {
-		page.getByPlaceholder("Search...").fill(query);
-		page.getByPlaceholder("Search...").press("Enter");
+		page.getByPlaceholder(Pattern.compile("Title, body text, tag")).fill(query);
+		page.getByPlaceholder(Pattern.compile("Title, body text, tag")).press("Enter");
 		// Wait for the search results to load
 		page.waitForTimeout(500);
 		return this;
@@ -100,8 +103,7 @@ public class EntryListPage extends BasePage {
 	 * Clear the search query.
 	 */
 	public EntryListPage clearSearch() {
-		// Click the clear button (X icon)
-		page.locator("button:near(input[placeholder='Search...'])").first().click();
+		page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Clear").setExact(true)).click();
 		page.waitForTimeout(500);
 		return this;
 	}
@@ -110,14 +112,14 @@ public class EntryListPage extends BasePage {
 	 * Get the number of entries displayed in the list.
 	 */
 	public int getEntryCount() {
-		return page.locator(".entry-card").count();
+		return page.locator(".ledger-row").count();
 	}
 
 	/**
 	 * Verify the number of entries displayed in the list.
 	 */
 	public EntryListPage verifyEntryCount(int expectedCount) {
-		assertThat(page.locator(".entry-card")).hasCount(expectedCount);
+		assertThat(page.locator(".ledger-row")).hasCount(expectedCount);
 		return this;
 	}
 

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useId } from 'react';
 
 interface TextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
   label?: string;
@@ -7,7 +7,8 @@ interface TextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement
 }
 
 export function Textarea({ label, error, helpText, className = '', ...props }: TextareaProps) {
-  const textareaId = props.id || `textarea-${Math.random().toString(36).substr(2, 9)}`;
+  const generatedId = useId();
+  const textareaId = props.id || generatedId;
   const textareaClasses = `field resize-y leading-relaxed ${error ? 'field-invalid' : ''} ${className}`.trim();
 
   return (

@@ -65,8 +65,8 @@ export function useDraft(options: UseDraftOptions): UseDraftReturn {
   const [restoredAt, setRestoredAt] = useState<number | null>(null);
 
   // Refs for cleanup and debouncing
-  const saveTimeoutRef = useRef<ReturnType<typeof setTimeout>>();
-  const idleTimeoutRef = useRef<ReturnType<typeof setTimeout>>();
+  const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const idleTimeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   // Flag to suppress saves immediately after clear
   const suppressSaveUntilRef = useRef<number>(0);
   // Flag to track if restore has been attempted (to prevent multiple restores)

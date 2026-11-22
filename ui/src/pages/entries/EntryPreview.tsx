@@ -22,7 +22,7 @@ export function EntryPreview() {
   // Redirect back if no state
   useEffect(() => {
     if (!state) {
-      navigate(`/console/${tenant}/entries/new`);
+      void navigate(`/console/${tenant}/entries/new`);
       return;
     }
 
@@ -87,7 +87,7 @@ export function EntryPreview() {
         sessionStorage.removeItem(`entryDraft_${tenant}_create`);
         // Invalidate all SWR cache to ensure entry list is refreshed
         await mutate(() => true);
-        navigate(`/console/${tenant}/entries/${newEntry.entryId}`);
+        await navigate(`/console/${tenant}/entries/${newEntry.entryId}`);
       } else {
         const request: UpdateEntryRequest = {
           frontMatter,
@@ -103,7 +103,7 @@ export function EntryPreview() {
         sessionStorage.removeItem(`entryDraft_${tenant}_edit_${entryId}`);
         // Invalidate all SWR cache to ensure entry list is refreshed
         await mutate(() => true);
-        navigate(`/console/${tenant}/entries/${updatedEntry.entryId}`);
+        await navigate(`/console/${tenant}/entries/${updatedEntry.entryId}`);
       }
     } catch (error) {
       if (error instanceof ApiError) {
@@ -127,7 +127,7 @@ export function EntryPreview() {
     const backPath =
       state.mode === 'edit' ? `/console/${tenant}/entries/${entryId}/edit` : `/console/${tenant}/entries/new`;
 
-    navigate(backPath, { state });
+    void navigate(backPath, { state });
   };
 
   const getCurrentMarkdown = () => {

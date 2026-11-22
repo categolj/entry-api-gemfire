@@ -1,6 +1,7 @@
 package am.ik.blog.e2e.page;
 
 import com.microsoft.playwright.Page;
+import com.microsoft.playwright.options.AriaRole;
 
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
 
@@ -15,14 +16,14 @@ public class EntryDetailPage extends BasePage {
 
 	@Override
 	public void waitForLoad() {
-		page.locator("button:has-text('Edit')").waitFor();
+		page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Edit entry")).waitFor();
 	}
 
 	/**
-	 * Click the Edit button.
+	 * Click the Edit entry button.
 	 */
 	public EntryFormPage clickEdit() {
-		page.click("button:has-text('Edit')");
+		page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Edit entry")).click();
 		page.waitForURL("**/console/_/entries/*/edit");
 		return new EntryFormPage(page, baseUrl);
 	}
@@ -31,8 +32,8 @@ public class EntryDetailPage extends BasePage {
 	 * Click the Delete button (opens confirmation modal).
 	 */
 	public EntryDetailPage clickDelete() {
-		page.locator("button:has-text('Delete')").first().click();
-		page.locator("h3:has-text('Delete Entry')").waitFor();
+		page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Delete").setExact(true)).click();
+		page.locator("h2:has-text('Delete this entry?')").waitFor();
 		return this;
 	}
 
@@ -40,7 +41,7 @@ public class EntryDetailPage extends BasePage {
 	 * Confirm deletion in the modal.
 	 */
 	public EntryListPage confirmDelete() {
-		page.locator(".fixed button:has-text('Delete')").click();
+		page.locator("[role='alertdialog'] button:has-text('Delete entry')").click();
 		page.waitForURL("**/console/_");
 		return new EntryListPage(page, baseUrl);
 	}
@@ -49,7 +50,7 @@ public class EntryDetailPage extends BasePage {
 	 * Cancel deletion in the modal.
 	 */
 	public EntryDetailPage cancelDelete() {
-		page.locator(".fixed button:has-text('Cancel')").click();
+		page.locator("[role='alertdialog'] button:has-text('Keep entry')").click();
 		return this;
 	}
 
@@ -81,7 +82,7 @@ public class EntryDetailPage extends BasePage {
 	 * Verify the categories are displayed.
 	 */
 	public EntryDetailPage verifyCategories(String... categories) {
-		String expected = String.join(" > ", categories);
+		String expected = String.join("›", categories);
 		assertThat(page.locator("text=" + expected)).isVisible();
 		return this;
 	}
@@ -90,8 +91,9 @@ public class EntryDetailPage extends BasePage {
 	 * Verify the tags are displayed.
 	 */
 	public EntryDetailPage verifyTags(String... tags) {
-		String expected = String.join(", ", tags);
-		assertThat(page.locator("text=" + expected)).isVisible();
+		for (String tag : tags) {
+			assertThat(page.getByText("#" + tag, new Page.GetByTextOptions().setExact(true))).isVisible();
+		}
 		return this;
 	}
 
@@ -99,8 +101,8 @@ public class EntryDetailPage extends BasePage {
 	 * Verify the delete confirmation modal is displayed.
 	 */
 	public EntryDetailPage verifyDeleteModalDisplayed() {
-		assertThat(page.locator("h3:has-text('Delete Entry')")).isVisible();
-		assertThat(page.locator("text=Are you sure you want to delete this entry")).isVisible();
+		assertThat(page.locator("h2:has-text('Delete this entry?')")).isVisible();
+		assertThat(page.locator("text=The entry is removed from the API.")).isVisible();
 		return this;
 	}
 

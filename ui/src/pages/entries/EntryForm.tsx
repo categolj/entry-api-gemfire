@@ -93,7 +93,7 @@ export function EntryForm({ mode }: EntryFormProps) {
       setIsRestoredFromPreview(true);
 
       // Clear the state to prevent re-applying on refresh
-      navigate(location.pathname, { replace: true });
+      void navigate(location.pathname, { replace: true });
     }
   }, [location.state, location.pathname, navigate]);
 
@@ -214,7 +214,7 @@ export function EntryForm({ mode }: EntryFormProps) {
 
     // Update markdown content when form fields change
     if (!markdownMode) {
-      const updatedFormData = { ...formData, [field]: value } as typeof formData;
+      const updatedFormData = { ...formData, [field]: value };
       const frontMatter: FrontMatter = {
         title: updatedFormData.title,
         summary: updatedFormData.summary || undefined,
@@ -332,7 +332,7 @@ export function EntryForm({ mode }: EntryFormProps) {
         ? `/console/${tenant}/entries/new/preview`
         : `/console/${tenant}/entries/${entryId}/edit/preview`;
 
-    navigate(previewPath, { state: previewState });
+    void navigate(previewPath, { state: previewState });
   };
 
   if (mode === 'edit' && loadingEntry) {

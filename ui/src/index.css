@@ -1,12 +1,37 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import 'tailwindcss';
+
+@source '../index.html';
+@source './';
+
+@theme {
+  --color-paper: #e9e5db;
+  --color-sheet: #f7f4ec;
+  --color-ink: #171811;
+  --color-ink-soft: #3b3c34;
+  --color-muted: #68675c;
+  --color-rule: #c9c4b5;
+  --color-pencil: #2b3fd0;
+  --color-pencil-deep: #2233ae;
+  --color-pencil-light: #9aa6ff;
+  --color-pencil-wash: #dfe2f8;
+  --color-press: #1c6a4d;
+  --color-press-wash: #ddebe2;
+  --color-redline: #a83224;
+  --color-redline-wash: #f3ddd8;
+
+  --font-sans: 'Bricolage Grotesque', system-ui, sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace;
+
+  --tracking-tightest: -0.045em;
+
+  --shadow-slip: 0 24px 60px -24px rgba(23, 24, 17, 0.35);
+}
 
 @layer base {
   html {
-    background-color: theme('colors.paper');
-    color: theme('colors.ink');
-    font-family: theme('fontFamily.sans');
+    background-color: var(--color-paper);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
   }
@@ -15,13 +40,18 @@
     min-height: 100vh;
   }
 
+  button:not(:disabled),
+  [role='button']:not(:disabled) {
+    cursor: pointer;
+  }
+
   ::selection {
-    background-color: theme('colors.pencil');
-    color: theme('colors.sheet');
+    background-color: var(--color-pencil);
+    color: var(--color-sheet);
   }
 
   :focus-visible {
-    outline: 2px solid theme('colors.pencil');
+    outline: 2px solid var(--color-pencil);
     outline-offset: 2px;
   }
 
@@ -33,7 +63,7 @@
 
   * {
     scrollbar-width: thin;
-    scrollbar-color: theme('colors.rule') transparent;
+    scrollbar-color: var(--color-rule) transparent;
   }
 
   *::-webkit-scrollbar {
@@ -42,7 +72,7 @@
   }
 
   *::-webkit-scrollbar-thumb {
-    background-color: theme('colors.rule');
+    background-color: var(--color-rule);
   }
 
   *::-webkit-scrollbar-track {
@@ -51,23 +81,23 @@
 
   input::placeholder,
   textarea::placeholder {
-    color: theme('colors.muted');
+    color: var(--color-muted);
     opacity: 1;
   }
 }
 
 @layer components {
   .brand-mark {
-    font-family: theme('fontFamily.sans');
+    font-family: var(--font-sans);
     font-weight: 800;
     font-size: 1.375rem;
     letter-spacing: -0.045em;
     line-height: 1;
-    color: theme('colors.ink');
+    color: var(--color-ink);
     text-decoration: none;
     display: inline-block;
     padding-bottom: 0.4rem;
-    background-image: linear-gradient(theme('colors.pencil'), theme('colors.pencil'));
+    background-image: linear-gradient(var(--color-pencil), var(--color-pencil));
     background-repeat: no-repeat;
     background-position: 0 100%;
     background-size: 2.25rem 3px;
@@ -76,10 +106,10 @@
   .field {
     display: block;
     width: 100%;
-    border: 1px solid theme('colors.rule');
+    border: 1px solid var(--color-rule);
     border-radius: 2px;
-    background-color: theme('colors.sheet');
-    color: theme('colors.ink');
+    background-color: var(--color-sheet);
+    color: var(--color-ink);
     padding: 0.55rem 0.7rem;
     font-size: 0.9375rem;
     line-height: 1.4;
@@ -87,32 +117,32 @@
   }
 
   .field:hover:not(:disabled) {
-    border-color: theme('colors.muted');
+    border-color: var(--color-muted);
   }
 
   .field:focus {
     outline: none;
-    border-color: theme('colors.pencil');
-    box-shadow: 0 0 0 3px theme('colors.pencil-wash');
+    border-color: var(--color-pencil);
+    box-shadow: 0 0 0 3px var(--color-pencil-wash);
   }
 
   .field:disabled {
-    background-color: theme('colors.paper');
-    color: theme('colors.muted');
+    background-color: var(--color-paper);
+    color: var(--color-muted);
     cursor: not-allowed;
   }
 
   .field-invalid {
-    border-color: theme('colors.redline');
+    border-color: var(--color-redline);
   }
 
   .field-title {
     border: none;
-    border-bottom: 1px solid theme('colors.rule');
+    border-bottom: 1px solid var(--color-rule);
     border-radius: 0;
     background-color: transparent;
     padding: 0.35rem 0;
-    font-family: theme('fontFamily.sans');
+    font-family: var(--font-sans);
     font-weight: 650;
     font-size: clamp(1.75rem, 4vw, 2.75rem);
     letter-spacing: -0.035em;
@@ -120,42 +150,42 @@
   }
 
   .field-title:focus {
-    border-color: theme('colors.pencil');
+    border-color: var(--color-pencil);
     box-shadow: none;
   }
 
   .label {
     display: block;
-    font-family: theme('fontFamily.mono');
+    font-family: var(--font-mono);
     font-size: 0.6875rem;
     letter-spacing: 0.02em;
-    color: theme('colors.muted');
+    color: var(--color-muted);
     margin-bottom: 0.35rem;
   }
 
   .meta-line {
-    font-family: theme('fontFamily.mono');
+    font-family: var(--font-mono);
     font-size: 0.75rem;
     line-height: 1.5;
-    color: theme('colors.muted');
+    color: var(--color-muted);
   }
 
   .rule-top {
-    border-top: 1px solid theme('colors.rule');
+    border-top: 1px solid var(--color-rule);
   }
 
   .rule-bottom {
-    border-bottom: 1px solid theme('colors.rule');
+    border-bottom: 1px solid var(--color-rule);
   }
 
   .ledger-row {
     position: relative;
-    border-bottom: 1px solid theme('colors.rule');
+    border-bottom: 1px solid var(--color-rule);
     transition: background-color 140ms ease;
   }
 
   .ledger-row:hover {
-    background-color: theme('colors.sheet');
+    background-color: var(--color-sheet);
   }
 
   .ledger-row:focus-visible {
@@ -173,12 +203,12 @@
   }
 
   .ledger-row:hover .folio-marker {
-    background-color: theme('colors.pencil');
+    background-color: var(--color-pencil);
   }
 
   .slip {
-    border: 1px solid theme('colors.rule');
-    background-color: theme('colors.sheet');
+    border: 1px solid var(--color-rule);
+    background-color: var(--color-sheet);
     border-radius: 2px;
   }
 
@@ -192,19 +222,19 @@
     padding: 0.5rem 0.125rem;
     font-size: 0.875rem;
     font-weight: 600;
-    color: theme('colors.muted');
+    color: var(--color-muted);
     background: transparent;
     border-bottom: 2px solid transparent;
     transition: color 120ms ease, border-color 120ms ease;
   }
 
   .tab:hover {
-    color: theme('colors.ink');
+    color: var(--color-ink);
   }
 
   .tab[aria-pressed='true'] {
-    color: theme('colors.ink');
-    border-bottom-color: theme('colors.pencil');
+    color: var(--color-ink);
+    border-bottom-color: var(--color-pencil);
   }
 }
 

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { api, ApiError } from '../../services';
 import { calculateDiff } from '../../utils';
 import { Button } from './Button';
@@ -26,20 +26,33 @@ export function AIEditingDialog({
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const modeLabels: Record<EditMode, { label: string; description: string }> = {
-    PROOFREADING: {
-      label: 'Proofreading',
-      description: 'Fix typos, punctuation, and grammar only',
+  const modes: { value: EditMode; label: string; description: string }[] = [
+    {
+      value: 'PROOFREADING',
+      label: 'Proofread',
+      description: 'Fix typos, punctuation, and grammar only.',
     },
-    COMPLETION: {
-      label: 'Completion',
-      description: 'Proofreading + fill in missing explanations',
+    {
+      value: 'COMPLETION',
+      label: 'Complete',
+      description: 'Proofread and fill in missing explanations.',
     },
-    EXPANSION: {
-      label: 'Expansion',
-      description: 'Proofreading + completion + continue writing',
+    {
+      value: 'EXPANSION',
+      label: 'Expand',
+      description: 'Proofread, complete, and continue writing.',
     },
-  };
+  ];
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && !isLoading) {
+        onClose();
+      }
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [isLoading, onClose]);
 
   const handleEdit = async () => {
     setIsLoading(true);
@@ -70,79 +83,118 @@ export function AIEditingDialog({
   const diffLines = editedContent !== null ? calculateDiff(originalContent, editedContent) : [];
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-30 overflow-y-auto h-full w-full z-50">
-      <div className="relative top-8 mx-auto p-6 border border-gray-200 max-w-4xl bg-white">
-        <div className="flex flex-col h-full">
-          {/* Header */}
-          <div className="mb-4">
-            <h3 className="text-lg font-medium text-black">AI Editing</h3>
-            <p className="mt-1 text-sm text-gray-500">Use AI to proofread and improve your content</p>
+    <div
+      className="modal-scrim fixed inset-0 z-50 overflow-y-auto"
+      onMouseDown={(event) => {
+        if (event.target === event.currentTarget && !isLoading) {
+          onClose();
+        }
+      }}
+    >
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="ai-editing-title"
+        className="relative mx-auto my-6 w-[min(56rem,calc(100%-2rem))] border border-rule bg-paper shadow-slip"
+      >
+        <div className="flex items-start justify-between gap-4 border-b border-rule px-6 py-5">
+          <div>
+            <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted">AI assistant</p>
+            <h2 id="ai-editing-title" className="mt-1 font-sans text-2xl font-bold tracking-tightest">
+              Proof and revise
+            </h2>
+            <p className="mt-1 text-sm text-ink-soft">
+              Review the proposed changes before anything touches your entry.
+            </p>
           </div>
+          <button
+            type="button"
+            onClick={onClose}
+            disabled={isLoading}
+            className="font-mono text-xs text-muted hover:text-ink disabled:opacity-40"
+          >
+            Close
+          </button>
+        </div>
 
-          {/* Mode Selection */}
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-black mb-2" htmlFor="edit-mode-select">
-              Edit Mode
-            </label>
-            <select
-              id="edit-mode-select"
-              value={mode}
-              onChange={(e) => setMode(e.target.value as EditMode)}
-              disabled={isLoading}
-              className="w-full px-3 py-2 border border-gray-300 text-sm focus:outline-none focus:border-black disabled:bg-gray-100 disabled:cursor-not-allowed"
-            >
-              {(Object.keys(modeLabels) as EditMode[]).map((m) => (
-                <option key={m} value={m}>
-                  {modeLabels[m].label} - {modeLabels[m].description}
-                </option>
-              ))}
-            </select>
-          </div>
+        <div className="px-6 py-5">
+          <fieldset>
+            <legend className="label">Revision kind</legend>
+            <div className="grid gap-2 sm:grid-cols-3">
+              {modes.map((option) => {
+                const id = `ai-mode-${option.value}`;
+                const selected = mode === option.value;
+                return (
+                  <label
+                    key={option.value}
+                    htmlFor={id}
+                    className={`cursor-pointer border px-3 py-3 transition-colors ${
+                      selected
+                        ? 'border-pencil bg-pencil-wash/50'
+                        : 'border-rule bg-sheet hover:border-muted'
+                    } ${isLoading ? 'cursor-not-allowed opacity-60' : ''}`}
+                  >
+                    <span className="flex items-center gap-2">
+                      <input
+                        id={id}
+                        type="radio"
+                        name="ai-mode"
+                        value={option.value}
+                        checked={selected}
+                        onChange={() => setMode(option.value)}
+                        disabled={isLoading}
+                        className="h-3.5 w-3.5 accent-[#2B3FD0]"
+                      />
+                      <span className="font-sans text-sm font-semibold text-ink">{option.label}</span>
+                    </span>
+                    <span className="mt-1.5 block text-xs leading-relaxed text-muted">
+                      {option.description}
+                    </span>
+                  </label>
+                );
+              })}
+            </div>
+          </fieldset>
 
-          {/* Run Button */}
-          <div className="mb-4">
+          <div className="mt-4 flex flex-wrap items-center gap-3">
             <Button
               type="button"
               onClick={() => void handleEdit()}
               disabled={isLoading || !originalContent.trim()}
               loading={isLoading}
             >
-              Run
+              {editedContent !== null ? 'Run again' : 'Run revision'}
             </Button>
+            <p className="meta-line">Nothing is applied until you choose Apply changes.</p>
           </div>
 
-          {/* Error Display */}
           {error && (
-            <div className="mb-4">
+            <div className="mt-4">
               <ErrorAlert message={error} onDismiss={() => setError(null)} />
             </div>
           )}
 
-          {/* Loading State */}
           {isLoading && (
-            <div className="flex justify-center items-center py-8">
-              <LoadingSpinner size="lg" />
-              <span className="ml-3 text-sm text-gray-500">Editing content...</span>
+            <div className="mt-6 flex items-center justify-center py-10">
+              <LoadingSpinner size="md" color="ink" label="Revising content" />
             </div>
           )}
 
-          {/* Diff Display */}
           {editedContent !== null && !isLoading && (
-            <div className="mb-4 flex-1 overflow-hidden">
-              <label className="block text-sm font-medium text-black mb-2">Changes Preview</label>
-              <DiffDisplay diffLines={diffLines} maxHeight="max-h-[32rem]" />
+            <div className="mt-6">
+              <p className="label">Proposed changes</p>
+              <DiffDisplay diffLines={diffLines} maxHeight="max-h-[30rem]" />
             </div>
           )}
+        </div>
 
-          {/* Actions */}
-          <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200">
-            <Button type="button" variant="secondary" onClick={onClose} disabled={isLoading}>
-              Cancel
-            </Button>
-            <Button type="button" onClick={handleApply} disabled={isLoading || editedContent === null}>
-              Apply Changes
-            </Button>
-          </div>
+        <div className="flex justify-end gap-3 border-t border-rule px-6 py-4">
+          <Button type="button" variant="secondary" onClick={onClose} disabled={isLoading}>
+            Cancel
+          </Button>
+          <Button type="button" onClick={handleApply} disabled={isLoading || editedContent === null}>
+            Apply changes
+          </Button>
         </div>
       </div>
     </div>

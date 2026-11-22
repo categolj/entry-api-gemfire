@@ -1,51 +1,54 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
 
 interface HeaderProps {
   tenant?: string;
   isDefaultTenant?: boolean;
-  showTenantInfo?: boolean;
-  showNavigation?: boolean;
 }
 
-export function Header({ tenant, isDefaultTenant, showTenantInfo = false, showNavigation = false }: HeaderProps) {
+/**
+ * Compact top bar shown on small screens, where the side rail is not available.
+ */
+export function Header({ tenant, isDefaultTenant }: HeaderProps) {
+  const tenantLabel = isDefaultTenant ? 'Default tenant' : tenant;
+  const tenantId = tenant ?? '_';
+
   return (
-    <nav className="bg-white border-b border-gray-200">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-14">
-          <div className="flex items-center">
-            <Link
-              to="/"
-              className="text-lg font-bold text-black tracking-wide hover:opacity-70 transition-opacity"
-            >
-              ENTRY.CONSOLE
-            </Link>
-          </div>
-          <div className="flex items-center space-x-6">
-            {showNavigation && tenant && (
-              <Link
-                to={`/console/${tenant}`}
-                className="text-sm text-black hover:opacity-70 transition-opacity"
-              >
-                Entries
-              </Link>
-            )}
-            {showNavigation && tenant && (
-              <Link
-                to={`/console/${tenant}/entries/new`}
-                className="text-sm text-black hover:opacity-70 transition-opacity"
-              >
-                New
-              </Link>
-            )}
-            {showTenantInfo && tenant && (
-              <span className="px-3 py-1 text-sm font-semibold text-white bg-gray-800 rounded-full">
-                {isDefaultTenant ? 'Default' : tenant}
-              </span>
-            )}
-          </div>
-        </div>
+    <header className="sticky top-0 z-40 border-b border-rule bg-paper/95 backdrop-blur lg:hidden">
+      <div className="flex h-14 items-center justify-between px-5">
+        <NavLink to="/" className="brand-mark text-lg">
+          Entry Desk
+        </NavLink>
+        <span className="font-mono text-[11px] text-muted">{tenantLabel}</span>
       </div>
-    </nav>
+      {tenant && (
+        <nav className="flex items-center gap-6 border-t border-rule px-5" aria-label="Console">
+          <NavLink
+            to={`/console/${tenant}`}
+            end
+            className={({ isActive }) =>
+              `border-b-2 py-2 font-sans text-sm ${isActive ? 'border-pencil font-semibold text-ink' : 'border-transparent text-ink-soft'}`
+            }
+          >
+            Entries
+          </NavLink>
+          <NavLink
+            to={`/console/${tenant}/entries/new`}
+            className={({ isActive }) =>
+              `border-b-2 py-2 font-sans text-sm ${isActive ? 'border-pencil font-semibold text-ink' : 'border-transparent text-ink-soft'}`
+            }
+          >
+            New entry
+          </NavLink>
+          <NavLink
+            to="/"
+            className="ml-auto border-b-2 border-transparent py-2 font-mono text-[11px] text-muted"
+            aria-label={`Switch tenant (current tenant id ${tenantId})`}
+          >
+            Switch
+          </NavLink>
+        </nav>
+      )}
+    </header>
   );
 }

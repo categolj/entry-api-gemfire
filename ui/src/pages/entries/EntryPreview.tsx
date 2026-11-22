@@ -155,58 +155,50 @@ export function EntryPreview() {
   const title =
     state.mode === 'create'
       ? existingEntryForId
-        ? `Review Changes for Entry ${state.entryIdInput}`
-        : 'Review New Entry'
-      : 'Review Changes';
+        ? `Review changes to entry ${state.entryIdInput}`
+        : 'Review the new entry'
+      : 'Review changes';
 
   const diffLines = calculateDiff(originalMarkdown, getCurrentMarkdown());
 
   return (
-    <div className="flex flex-col h-[calc(100vh-120px)]">
-      {/* Header */}
-      <div className="mb-6 flex-shrink-0">
-        <nav className="flex" aria-label="Breadcrumb">
-          <ol className="flex items-center space-x-2 text-sm">
-            <li>
-              <Link to={`/console/${tenant}`} className="text-gray-500 hover:text-black">
-                Entries
-              </Link>
-            </li>
-            <li>
-              <span className="text-gray-300">/</span>
-            </li>
-            <li>
-              <button onClick={handleBack} className="text-gray-500 hover:text-black">
-                {state.mode === 'create' ? 'Create New Entry' : 'Edit Entry'}
-              </button>
-            </li>
-            <li>
-              <span className="text-gray-300">/</span>
-            </li>
-            <li>
-              <span className="text-gray-500">Preview</span>
-            </li>
-          </ol>
-        </nav>
-        <h1 className="mt-2 text-xl font-bold text-black">## {title}</h1>
-      </div>
+    <div>
+      <nav aria-label="Breadcrumb" className="meta-line">
+        <Link to={`/console/${tenant}`} className="hover:text-pencil hover:underline">
+          Entries
+        </Link>
+        <span className="mx-2 text-rule">/</span>
+        <button type="button" onClick={handleBack} className="hover:text-pencil hover:underline">
+          {state.mode === 'create' ? 'New entry' : 'Edit entry'}
+        </button>
+        <span className="mx-2 text-rule">/</span>
+        <span>Proof</span>
+      </nav>
 
-      {/* Error Display */}
+      <header className="mt-3 border-b border-ink pb-5">
+        <h1 className="font-sans text-3xl font-bold tracking-tightest sm:text-4xl">{title}</h1>
+        <p className="mt-2 text-sm text-ink-soft">
+          Saving sends this version to the API immediately. Check the marks before you confirm.
+        </p>
+      </header>
+
       {submitError && (
-        <div className="mb-4 flex-shrink-0">
+        <div className="mt-6">
           <ErrorAlert message={submitError} onDismiss={() => setSubmitError(null)} />
         </div>
       )}
 
-      {/* Diff Display */}
-      <div className="border border-gray-200 p-4 flex flex-col flex-1 min-h-0">
-        <div className="mb-4 flex-1 flex flex-col overflow-hidden min-h-0">
-          <DiffDisplay diffLines={diffLines} maxHeight="" className="flex-1 overflow-y-auto" />
-        </div>
+      <div className="mt-6">
+        <DiffDisplay diffLines={diffLines} maxHeight="max-h-[calc(100vh-26rem)] min-h-[18rem]" />
+      </div>
 
-        <div className="flex justify-end space-x-3 flex-shrink-0 pt-4 border-t border-gray-200">
+      <div className="mt-6 flex flex-wrap items-center justify-between gap-3 border-t border-rule pt-5">
+        <p className="meta-line">
+          {state.mode === 'create' ? 'Creates a new entry.' : 'Updates the existing entry.'}
+        </p>
+        <div className="flex gap-3">
           <Button type="button" variant="secondary" onClick={handleBack} disabled={isSubmitting}>
-            Back to Edit
+            Back to edit
           </Button>
           <Button
             type="button"
@@ -214,7 +206,7 @@ export function EntryPreview() {
             disabled={isSubmitting}
             loading={isSubmitting}
           >
-            {isSubmitting ? 'Saving...' : 'Confirm & Save'}
+            {isSubmitting ? 'Saving' : state.mode === 'create' ? 'Confirm and create' : 'Confirm and update'}
           </Button>
         </div>
       </div>

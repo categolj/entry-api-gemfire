@@ -1,4 +1,82 @@
-/* Fix MDEditor click area issue */
+/*
+ * Theme the Markdown editor to match the desk surface.
+ * The editor is a working surface: sheet background, mono text, blue-pencil marks.
+ */
+
+.w-md-editor {
+  --color-canvas-default: #f7f4ec;
+  --color-canvas-subtle: #e9e5db;
+  --color-border-default: #c9c4b5;
+  --color-border-muted: #d8d3c5;
+  --color-fg-default: #171811;
+  --color-fg-muted: #68675c;
+  --color-accent-fg: #2b3fd0;
+
+  background-color: #f7f4ec;
+  border: 1px solid #c9c4b5;
+  border-radius: 2px;
+  box-shadow: none;
+  color: #171811;
+  font-family: 'Bricolage Grotesque', system-ui, sans-serif;
+}
+
+.w-md-editor-toolbar {
+  background-color: #e9e5db;
+  border-bottom: 1px solid #c9c4b5;
+  padding: 3px 6px;
+}
+
+.w-md-editor-toolbar li > button {
+  border-radius: 2px;
+  color: #3b3c34;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 28px;
+  height: 28px;
+  padding: 0 6px;
+}
+
+.w-md-editor-toolbar li > button:hover,
+.w-md-editor-toolbar li > button:focus,
+.w-md-editor-toolbar li.active > button {
+  color: #2b3fd0;
+  background-color: #dfe2f8;
+}
+
+.w-md-editor-toolbar-divider {
+  background-color: #c9c4b5;
+}
+
+.w-md-editor-content {
+  background-color: #f7f4ec;
+}
+
+.w-md-editor-text-input,
+.w-md-editor-text-pre,
+.w-md-editor-text {
+  font-family: 'IBM Plex Mono', ui-monospace, monospace !important;
+  font-size: 13px !important;
+  line-height: 1.75 !important;
+}
+
+.w-md-editor-text-pre > code,
+.w-md-editor-text-pre > code .token {
+  font-family: 'IBM Plex Mono', ui-monospace, monospace !important;
+  font-size: 13px !important;
+  line-height: 1.75 !important;
+  padding: 0 !important;
+}
+
+.w-md-editor-text-pre > code {
+  color: #171811 !important;
+}
+
+.w-md-editor-preview {
+  background-color: #f7f4ec;
+  box-shadow: inset 1px 0 0 0 #d8d3c5;
+}
+
 .w-md-editor .w-md-editor-text-pre,
 .w-md-editor .w-md-editor-text-input,
 .w-md-editor .w-md-editor-text {
@@ -12,4 +90,165 @@
 /* Ensure the textarea fills the entire editor area */
 .w-md-editor .w-md-editor-text-input {
   padding-top: 10px !important;
+}
+
+.w-md-editor-bar {
+  background-color: #e9e5db;
+}
+
+/* Rendered preview typography */
+.w-md-editor-preview .wmde-markdown {
+  background-color: transparent;
+  color: #171811;
+  font-family: 'Bricolage Grotesque', system-ui, sans-serif;
+  font-size: 15px;
+  line-height: 1.75;
+  padding: 1.5rem 1.75rem;
+}
+
+.wmde-markdown h1,
+.wmde-markdown h2,
+.wmde-markdown h3,
+.wmde-markdown h4 {
+  border-bottom: none;
+  font-family: 'Bricolage Grotesque', system-ui, sans-serif;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: #171811;
+}
+
+.wmde-markdown h1 {
+  font-size: 2rem;
+}
+
+.wmde-markdown h2 {
+  font-size: 1.45rem;
+  padding-bottom: 0;
+}
+
+.wmde-markdown h3 {
+  font-size: 1.15rem;
+}
+
+.wmde-markdown a {
+  color: #2b3fd0;
+  text-decoration: underline;
+  text-decoration-color: #c9c4b5;
+  text-underline-offset: 3px;
+}
+
+.wmde-markdown a:hover {
+  text-decoration-color: #2b3fd0;
+}
+
+.wmde-markdown code {
+  background-color: #e9e5db;
+  border-radius: 2px;
+  color: #2233ae;
+  font-family: 'IBM Plex Mono', ui-monospace, monospace;
+  font-size: 0.85em;
+}
+
+.wmde-markdown pre {
+  background-color: #171811;
+  border-radius: 2px;
+  color: #f7f4ec;
+}
+
+.wmde-markdown pre code {
+  background-color: transparent;
+  color: inherit;
+}
+
+/* Syntax colors tuned for the dark code block, not the GitHub light theme. */
+.wmde-markdown pre .token.comment,
+.wmde-markdown pre .token.prolog,
+.wmde-markdown pre .token.doctype,
+.wmde-markdown pre .token.cdata {
+  color: #9aa08e;
+}
+
+.wmde-markdown pre .token.punctuation {
+  color: #cfcbbe;
+}
+
+.wmde-markdown pre .token.property,
+.wmde-markdown pre .token.tag,
+.wmde-markdown pre .token.constant,
+.wmde-markdown pre .token.symbol,
+.wmde-markdown pre .token.deleted {
+  color: #f2a7a0;
+}
+
+.wmde-markdown pre .token.boolean,
+.wmde-markdown pre .token.number,
+.wmde-markdown pre .token.regex,
+.wmde-markdown pre .token.important,
+.wmde-markdown pre .token.variable {
+  color: #f3c37e;
+}
+
+.wmde-markdown pre .token.selector,
+.wmde-markdown pre .token.attr-name,
+.wmde-markdown pre .token.string,
+.wmde-markdown pre .token.char,
+.wmde-markdown pre .token.builtin,
+.wmde-markdown pre .token.inserted {
+  color: #a9d49a;
+}
+
+.wmde-markdown pre .token.operator,
+.wmde-markdown pre .token.entity,
+.wmde-markdown pre .token.url {
+  color: #e3dfd2;
+}
+
+.wmde-markdown pre .token.atrule,
+.wmde-markdown pre .token.attr-value,
+.wmde-markdown pre .token.keyword {
+  color: #c9a7f5;
+}
+
+.wmde-markdown pre .token.function,
+.wmde-markdown pre .token.class-name {
+  color: #9aa6ff;
+}
+
+.wmde-markdown blockquote {
+  border-left: 3px solid #2b3fd0;
+  color: #3b3c34;
+  background-color: #f0ede3;
+  padding: 0.25rem 1rem;
+}
+
+.wmde-markdown hr {
+  background-color: #c9c4b5;
+  height: 1px;
+}
+
+.wmde-markdown table tr {
+  background-color: transparent;
+  border-top: 1px solid #c9c4b5;
+}
+
+.wmde-markdown table th,
+.wmde-markdown table td {
+  border: 1px solid #c9c4b5;
+  padding: 0.4rem 0.75rem;
+}
+
+.wmde-markdown table th {
+  background-color: #e9e5db;
+}
+
+/* On narrow screens the split preview would leave too little room to write. */
+@media (max-width: 767px) {
+  .w-md-editor .w-md-editor-preview,
+  .w-md-editor .w-md-editor-bar {
+    display: none !important;
+  }
+
+  .w-md-editor .w-md-editor-area {
+    width: 100% !important;
+  }
 }

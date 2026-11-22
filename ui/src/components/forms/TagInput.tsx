@@ -9,7 +9,14 @@ interface TagInputProps {
   disabled?: boolean;
 }
 
-export function TagInput({ label, value, onChange, placeholder = "Add tags and press Enter", error, disabled = false }: TagInputProps) {
+export function TagInput({
+  label,
+  value,
+  onChange,
+  placeholder = 'Add a tag, press Enter',
+  error,
+  disabled = false,
+}: TagInputProps) {
   const [inputValue, setInputValue] = useState('');
   const inputId = `tag-input-${Math.random().toString(36).substr(2, 9)}`;
 
@@ -34,24 +41,30 @@ export function TagInput({ label, value, onChange, placeholder = "Add tags and p
   return (
     <div>
       {label && (
-        <label htmlFor={inputId} className="block text-sm font-medium text-black mb-1">
+        <label htmlFor={inputId} className="label">
           {label}
         </label>
       )}
-      <div className={`flex flex-wrap gap-2 p-2 border min-h-[2.5rem] ${error ? 'border-red-400' : 'border-gray-300'} ${disabled ? 'bg-gray-50' : ''} focus-within:border-black transition-colors`}>
+      <div
+        className={`flex flex-wrap items-center gap-1.5 rounded-[2px] border bg-sheet p-2 transition-colors focus-within:border-pencil focus-within:shadow-[0_0_0_3px_#DFE2F8] ${
+          error ? 'border-redline' : 'border-rule'
+        } ${disabled ? 'bg-paper' : ''}`}
+      >
         {value.map((tag, index) => (
           <span
             key={index}
-            className="inline-flex items-center px-2 py-1 text-xs font-medium bg-gray-100 text-black border border-gray-300"
+            className="inline-flex items-center gap-1.5 border border-rule bg-paper px-2 py-0.5 font-mono text-[11px] text-ink"
           >
+            <span className="text-pencil">#</span>
             {tag}
             <button
               type="button"
               onClick={() => removeTag(index)}
               disabled={disabled}
-              className="ml-1 text-gray-500 hover:text-black focus:outline-none disabled:opacity-40 disabled:cursor-not-allowed"
+              className="text-muted hover:text-redline disabled:opacity-40"
+              aria-label={`Remove tag ${tag}`}
             >
-              x
+              ×
             </button>
           </span>
         ))}
@@ -63,10 +76,10 @@ export function TagInput({ label, value, onChange, placeholder = "Add tags and p
           onKeyDown={handleKeyDown}
           placeholder={value.length === 0 ? placeholder : ''}
           disabled={disabled}
-          className="flex-1 min-w-[120px] border-none outline-none bg-transparent disabled:cursor-not-allowed"
+          className="min-w-[9rem] flex-1 border-none bg-transparent px-1 py-0.5 font-sans text-sm outline-none disabled:cursor-not-allowed"
         />
       </div>
-      {error && <p className="mt-1 text-sm text-red-600">{error}</p>}
+      {error && <p className="mt-1 font-mono text-[11px] text-redline">{error}</p>}
     </div>
   );
 }

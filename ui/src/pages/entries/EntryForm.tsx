@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams, Link, useLocation } from 'react-router-dom';
 import { useTenant, useApi, useDraft } from '../../hooks';
 import { api, ApiError } from '../../services';
@@ -25,9 +25,9 @@ export function EntryForm({ mode }: EntryFormProps) {
     tags: [] as string[],
     content: '',
   });
-  
+
   const [entryIdInput, setEntryIdInput] = useState('');
-  
+
   const [markdownMode, setMarkdownMode] = useState(false);
   const [markdownContent, setMarkdownContent] = useState('');
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -40,8 +40,27 @@ export function EntryForm({ mode }: EntryFormProps) {
   const [isLoadingTemplate, setIsLoadingTemplate] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [showEditingDialog, setShowEditingDialog] = useState(false);
+  const titleRef = useRef<HTMLTextAreaElement>(null);
 
   const isFormBusy = isLoadingExisting || isSummarizing || isLoadingTemplate;
+
+  // Let the title field grow with its content instead of scrolling horizontally.
+  // Re-fit on resize and once webfonts settle, since both change the line count.
+  useEffect(() => {
+    const field = titleRef.current;
+    if (!field) return;
+
+    const fit = () => {
+      field.style.height = 'auto';
+      field.style.height = `${field.scrollHeight}px`;
+    };
+
+    fit();
+    window.addEventListener('resize', fit);
+    void document.fonts?.ready.then(fit);
+
+    return () => window.removeEventListener('resize', fit);
+  }, [formData.title, markdownMode]);
 
   // Load existing entry for edit mode
   const {
@@ -49,14 +68,13 @@ export function EntryForm({ mode }: EntryFormProps) {
     loading: loadingEntry,
     error: loadError,
   } = useApi(
-    () => mode === 'edit' ? api.getEntry(tenant, entryId) : Promise.resolve(null),
+    () => (mode === 'edit' ? api.getEntry(tenant, entryId) : Promise.resolve(null)),
     [tenant, entryId, mode],
     { immediate: mode === 'edit' }
   );
 
-  const draftKey = mode === 'create'
-    ? `entryDraft_${tenant}_create`
-    : `entryDraft_${tenant}_edit_${entryId}`;
+  const draftKey =
+    mode === 'create' ? `entryDraft_${tenant}_create` : `entryDraft_${tenant}_edit_${entryId}`;
 
   const draft = useDraft({
     key: draftKey,
@@ -73,7 +91,7 @@ export function EntryForm({ mode }: EntryFormProps) {
       setUpdateTimestamp(state.updateTimestamp ?? true);
       setOriginalMarkdown(state.originalMarkdown || '');
       setIsRestoredFromPreview(true);
-      
+
       // Clear the state to prevent re-applying on refresh
       navigate(location.pathname, { replace: true });
     }
@@ -88,8 +106,8 @@ export function EntryForm({ mode }: EntryFormProps) {
       setFormData({
         title: existingEntry.frontMatter.title || '',
         summary: existingEntry.frontMatter.summary || '',
-        categories: existingEntry.frontMatter.categories?.map(c => c.name) || [],
-        tags: existingEntry.frontMatter.tags?.map(t => t.name) || [],
+        categories: existingEntry.frontMatter.categories?.map((c) => c.name) || [],
+        tags: existingEntry.frontMatter.tags?.map((t) => t.name) || [],
         content: existingEntry.content || '',
       });
 
@@ -109,14 +127,16 @@ export function EntryForm({ mode }: EntryFormProps) {
       const frontMatter: FrontMatter = {
         title: formData.title,
         summary: formData.summary || undefined,
-        categories: formData.categories.map(name => ({ name })),
-        tags: formData.tags.map(name => ({ name })),
+        categories: formData.categories.map((name) => ({ name })),
+        tags: formData.tags.map((name) => ({ name })),
         // Only include date if it was explicitly set in the original
         ...(existingEntry.frontMatter.date && { date: existingEntry.frontMatter.date }),
         // Only include updated when explicitly keeping the old timestamp (checkbox unchecked)
-        ...(mode === 'edit' && !updateTimestamp && (existingEntry.frontMatter.updated || existingEntry.updated.date) && { 
-          updated: existingEntry.frontMatter.updated || existingEntry.updated.date 
-        }),
+        ...(mode === 'edit' &&
+          !updateTimestamp &&
+          (existingEntry.frontMatter.updated || existingEntry.updated.date) && {
+            updated: existingEntry.frontMatter.updated || existingEntry.updated.date,
+          }),
       };
       setMarkdownContent(createMarkdownWithFrontMatter(frontMatter, formData.content));
     }
@@ -175,8 +195,8 @@ export function EntryForm({ mode }: EntryFormProps) {
       setFormData({
         title: existingEntry.frontMatter.title || '',
         summary: existingEntry.frontMatter.summary || '',
-        categories: existingEntry.frontMatter.categories?.map(c => c.name) || [],
-        tags: existingEntry.frontMatter.tags?.map(t => t.name) || [],
+        categories: existingEntry.frontMatter.categories?.map((c) => c.name) || [],
+        tags: existingEntry.frontMatter.tags?.map((t) => t.name) || [],
         content: existingEntry.content || '',
       });
     }
@@ -189,23 +209,25 @@ export function EntryForm({ mode }: EntryFormProps) {
   };
 
   const handleFieldChange = (field: keyof typeof formData, value: string | string[]) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData((prev) => ({ ...prev, [field]: value }));
     setSubmitError(null);
-    
+
     // Update markdown content when form fields change
     if (!markdownMode) {
       const updatedFormData = { ...formData, [field]: value } as typeof formData;
       const frontMatter: FrontMatter = {
         title: updatedFormData.title,
         summary: updatedFormData.summary || undefined,
-        categories: updatedFormData.categories.map(name => ({ name })),
-        tags: updatedFormData.tags.map(name => ({ name })),
+        categories: updatedFormData.categories.map((name) => ({ name })),
+        tags: updatedFormData.tags.map((name) => ({ name })),
         // Only include date if it was explicitly set in the original
         ...(existingEntry?.frontMatter.date && { date: existingEntry.frontMatter.date }),
         // Only include updated when explicitly keeping the old timestamp (checkbox unchecked)
-        ...(mode === 'edit' && !updateTimestamp && (existingEntry?.frontMatter.updated || existingEntry?.updated.date) && { 
-          updated: existingEntry?.frontMatter.updated || existingEntry?.updated.date 
-        }),
+        ...(mode === 'edit' &&
+          !updateTimestamp &&
+          (existingEntry?.frontMatter.updated || existingEntry?.updated.date) && {
+            updated: existingEntry?.frontMatter.updated || existingEntry?.updated.date,
+          }),
       };
       setMarkdownContent(createMarkdownWithFrontMatter(frontMatter, updatedFormData.content));
     }
@@ -213,15 +235,15 @@ export function EntryForm({ mode }: EntryFormProps) {
 
   const handleMarkdownChange = (value: string) => {
     setMarkdownContent(value);
-    
+
     // Parse markdown and update form fields
     const { frontMatter, content } = parseMarkdownWithFrontMatter(value);
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       title: frontMatter.title || prev.title,
       summary: frontMatter.summary || prev.summary,
-      categories: frontMatter.categories?.map(c => c.name) || prev.categories,
-      tags: frontMatter.tags?.map(t => t.name) || prev.tags,
+      categories: frontMatter.categories?.map((c) => c.name) || prev.categories,
+      tags: frontMatter.tags?.map((t) => t.name) || prev.tags,
       content: content || prev.content,
     }));
   };
@@ -243,8 +265,8 @@ export function EntryForm({ mode }: EntryFormProps) {
       setFormData({
         title: entry.frontMatter.title || '',
         summary: entry.frontMatter.summary || '',
-        categories: entry.frontMatter.categories?.map(c => c.name) || [],
-        tags: entry.frontMatter.tags?.map(t => t.name) || [],
+        categories: entry.frontMatter.categories?.map((c) => c.name) || [],
+        tags: entry.frontMatter.tags?.map((t) => t.name) || [],
         content: entry.content || '',
       });
 
@@ -274,8 +296,8 @@ export function EntryForm({ mode }: EntryFormProps) {
       setFormData({
         title: frontMatter.title || '',
         summary: frontMatter.summary || '',
-        categories: frontMatter.categories?.map(c => c.name) || [],
-        tags: frontMatter.tags?.map(t => t.name) || [],
+        categories: frontMatter.categories?.map((c) => c.name) || [],
+        tags: frontMatter.tags?.map((t) => t.name) || [],
         content: content || '',
       });
       setMarkdownContent(templateMarkdown);
@@ -302,32 +324,32 @@ export function EntryForm({ mode }: EntryFormProps) {
       entryIdInput,
       updateTimestamp,
       existingEntry,
-      originalMarkdown
+      originalMarkdown,
     };
 
-    const previewPath = mode === 'create' 
-      ? `/console/${tenant}/entries/new/preview`
-      : `/console/${tenant}/entries/${entryId}/edit/preview`;
-    
+    const previewPath =
+      mode === 'create'
+        ? `/console/${tenant}/entries/new/preview`
+        : `/console/${tenant}/entries/${entryId}/edit/preview`;
+
     navigate(previewPath, { state: previewState });
   };
 
-
   if (mode === 'edit' && loadingEntry) {
     return (
-      <div className="flex justify-center items-center h-64">
-        <LoadingSpinner size="lg" />
+      <div className="flex h-64 items-center justify-center">
+        <LoadingSpinner size="lg" label="Loading entry" />
       </div>
     );
   }
 
   if (mode === 'edit' && loadError) {
     return (
-      <div className="px-4 py-3 sm:px-0">
+      <div>
         <ErrorAlert message={loadError} />
-        <div className="mt-3">
+        <div className="mt-4">
           <Link to={`/console/${tenant}`}>
-            <Button variant="secondary">Back to Entries</Button>
+            <Button variant="secondary">Back to entries</Button>
           </Link>
         </div>
       </div>
@@ -336,108 +358,105 @@ export function EntryForm({ mode }: EntryFormProps) {
 
   return (
     <div>
-      {/* Header */}
-      <div className="mb-6">
-        <nav className="flex" aria-label="Breadcrumb">
-          <ol className="flex items-center space-x-2 text-sm">
-            <li>
-              <Link to={`/console/${tenant}`} className="text-gray-500 hover:text-black">
-                Entries
-              </Link>
-            </li>
-            <li>
-              <span className="text-gray-300">/</span>
-            </li>
-            <li>
-              <span className="text-gray-500">
-                {mode === 'create' ? 'Create New Entry' : `Edit Entry ${entryId}`}
-              </span>
-            </li>
-          </ol>
-        </nav>
-        <h1 className="mt-2 text-xl font-bold text-black">
-          {mode === 'create' ? '## Create New Entry' : '## Edit Entry'}
-        </h1>
-      </div>
+      <nav aria-label="Breadcrumb" className="meta-line">
+        <Link to={`/console/${tenant}`} className="hover:text-pencil hover:underline">
+          Entries
+        </Link>
+        <span className="mx-2 text-rule">/</span>
+        {mode === 'edit' ? (
+          <>
+            <Link
+              to={`/console/${tenant}/entries/${entryId}`}
+              className="hover:text-pencil hover:underline"
+            >
+              Entry {entryId}
+            </Link>
+            <span className="mx-2 text-rule">/</span>
+            <span>Edit</span>
+          </>
+        ) : (
+          <span>New entry</span>
+        )}
+      </nav>
 
-      {/* Mode Toggle */}
-      <div className="mb-6 border border-gray-200 p-4">
-        <div className="flex items-center space-x-4">
-          <span className="text-sm font-medium text-black">Edit Mode:</span>
-          <div className="flex border border-gray-300">
-            <button
-              type="button"
-              onClick={() => setMarkdownMode(false)}
-              disabled={isFormBusy}
-              className={`px-4 py-2 text-sm font-medium disabled:opacity-40 disabled:cursor-not-allowed ${
-                !markdownMode
-                  ? 'bg-black text-white'
-                  : 'bg-white text-black hover:bg-gray-50'
-              }`}
-            >
-              Form Editor
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setMarkdownMode(true);
-                if (!markdownContent) {
-                  const frontMatter: FrontMatter = {
-                    title: formData.title,
-                    summary: formData.summary || undefined,
-                    categories: formData.categories.map(name => ({ name })),
-                    tags: formData.tags.map(name => ({ name })),
-                  };
-                  setMarkdownContent(createMarkdownWithFrontMatter(frontMatter, formData.content));
-                }
-              }}
-              disabled={isFormBusy}
-              className={`px-4 py-2 text-sm font-medium border-l border-gray-300 disabled:opacity-40 disabled:cursor-not-allowed ${
-                markdownMode
-                  ? 'bg-black text-white'
-                  : 'bg-white text-black hover:bg-gray-50'
-              }`}
-            >
-              Markdown Editor
-            </button>
-          </div>
+      <header className="mt-3 flex flex-wrap items-end justify-between gap-4 border-b border-ink pb-5">
+        <div>
+          <h1 className="font-sans text-3xl font-bold tracking-tightest sm:text-4xl">
+            {mode === 'create' ? 'New entry' : 'Edit entry'}
+          </h1>
+          <p className="mt-2 text-sm text-ink-soft">
+            {mode === 'create'
+              ? 'Draft the entry, then review every change before it is sent to the API.'
+              : `Editing entry № ${String(entryId).padStart(3, '0')}.`}
+          </p>
         </div>
-      </div>
 
-      {/* Error Display */}
+        <div className="flex w-full items-end gap-1 lg:w-auto" role="group" aria-label="Editor mode">
+          <button
+            type="button"
+            onClick={() => setMarkdownMode(false)}
+            disabled={isFormBusy}
+            aria-pressed={!markdownMode}
+            className="tab disabled:opacity-40"
+          >
+            Form editor
+          </button>
+          <span className="mx-2 h-4 w-px bg-rule" aria-hidden="true" />
+          <button
+            type="button"
+            onClick={() => {
+              setMarkdownMode(true);
+              if (!markdownContent) {
+                const frontMatter: FrontMatter = {
+                  title: formData.title,
+                  summary: formData.summary || undefined,
+                  categories: formData.categories.map((name) => ({ name })),
+                  tags: formData.tags.map((name) => ({ name })),
+                };
+                setMarkdownContent(createMarkdownWithFrontMatter(frontMatter, formData.content));
+              }
+            }}
+            disabled={isFormBusy}
+            aria-pressed={markdownMode}
+            className="tab disabled:opacity-40"
+          >
+            Markdown editor
+          </button>
+        </div>
+      </header>
+
       {submitError && (
-        <div className="mb-4">
+        <div className="mt-5">
           <ErrorAlert message={submitError} onDismiss={() => setSubmitError(null)} />
         </div>
       )}
 
-      {/* Upload Error Display */}
       {uploadError && (
-        <div className="mb-4">
-          <ErrorAlert message={uploadError} onDismiss={() => setUploadError(null)} />
+        <div className="mt-5">
+          <ErrorAlert title="Upload failed" message={uploadError} onDismiss={() => setUploadError(null)} />
         </div>
       )}
 
-      {/* Draft Restored Banner */}
       {draft.status === 'restored' && draft.restoredAt && (
-        <DraftBanner
-          restoredAt={draft.restoredAt}
-          onDiscard={handleDiscardDraft}
-          onDismiss={draft.dismiss}
-        />
+        <div className="mt-5">
+          <DraftBanner
+            restoredAt={draft.restoredAt}
+            onDiscard={handleDiscardDraft}
+            onDismiss={draft.dismiss}
+          />
+        </div>
       )}
 
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={handleSubmit} className="mt-6">
         {markdownMode ? (
-          /* Markdown Editor */
-          <>
+          /* Markdown editor */
+          <div className="space-y-6">
             {mode === 'create' && (
-              <div className="border border-gray-200 p-4 mb-4">
-                <h3 className="text-base font-medium text-black mb-3">Entry ID</h3>
-                <div className="flex items-end space-x-2">
-                  <div className="w-80">
+              <div className="border border-rule bg-sheet p-4">
+                <h2 className="label">Entry ID</h2>
+                <div className="flex items-end gap-2">
+                  <div className="w-full max-w-xs">
                     <Input
-                      label="Entry ID (Optional)"
                       type="number"
                       value={entryIdInput}
                       onChange={(e) => setEntryIdInput(e.target.value)}
@@ -447,8 +466,9 @@ export function EntryForm({ mode }: EntryFormProps) {
                           void handleLoadExisting();
                         }
                       }}
-                      placeholder="Leave empty for auto-generated ID"
+                      placeholder="Optional"
                       disabled={isFormBusy}
+                      helpText="Leave empty to auto-generate, or load an existing entry."
                     />
                   </div>
                   <Button
@@ -463,11 +483,13 @@ export function EntryForm({ mode }: EntryFormProps) {
                 </div>
               </div>
             )}
-            <div className={`border border-gray-200 p-4 ${isFormBusy ? 'opacity-60 pointer-events-none' : ''}`}>
-              <div>
-                <label className="block text-sm font-medium text-black mb-2">
-                  Markdown Content
-                </label>
+
+            <div className={isFormBusy ? 'pointer-events-none opacity-60' : ''}>
+              <div className="flex items-baseline justify-between border-b border-rule pb-2">
+                <h2 className="label mb-0">Markdown with front matter</h2>
+                <span className="meta-line">Live preview</span>
+              </div>
+              <div className="mt-3">
                 <ImageDropEditor
                   value={markdownContent}
                   onChange={handleMarkdownChange}
@@ -476,54 +498,101 @@ export function EntryForm({ mode }: EntryFormProps) {
                   onUploadError={setUploadError}
                 />
               </div>
-              <p className="mt-2 text-sm text-gray-500">
-                Edit the complete entry including front matter and content in markdown format with live preview. Drag and drop or paste images to upload.
+              <p className="mt-2 text-sm text-ink-soft">
+                Edit the whole entry, including front matter, in Markdown. Drag or paste an image to
+                upload it.
               </p>
             </div>
-          </>
+          </div>
         ) : (
-          /* Form Editor */
+          /* Form editor */
           <>
-            {/* Basic Information */}
-            <div className="border border-gray-200 p-4">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-base font-medium text-black">Basic Information</h3>
-                {mode === 'create' && (
-                  <Button
-                    type="button"
-                    variant="secondary"
-                    size="sm"
-                    onClick={() => void handleLoadTemplate()}
-                    disabled={isFormBusy}
-                    loading={isLoadingTemplate}
-                  >
-                    Load Template
-                  </Button>
-                )}
+            <div>
+              <label htmlFor="entry-title" className="label">
+                Title
+              </label>
+              <textarea
+                id="entry-title"
+                ref={titleRef}
+                rows={1}
+                value={formData.title}
+                onChange={(e) => handleFieldChange('title', e.target.value)}
+                onKeyDown={(e) => {
+                  // The title is a single logical line; the field only wraps visually.
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                  }
+                }}
+                placeholder="Untitled entry"
+                required
+                disabled={isFormBusy}
+                className="field-title w-full resize-none overflow-hidden"
+              />
+            </div>
+
+            <div className="mt-8 grid gap-10 lg:grid-cols-[minmax(0,1fr)_17rem]">
+              <div className={`min-w-0 ${isFormBusy ? 'pointer-events-none opacity-60' : ''}`}>
+                <div className="flex flex-wrap items-baseline justify-between gap-2 border-b border-rule pb-2">
+                  <h2 className="label mb-0">Body</h2>
+                  <div className="flex items-center gap-4">
+                    <span className="meta-line hidden sm:inline">Markdown, live preview</span>
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => setShowEditingDialog(true)}
+                      disabled={!formData.content.trim() || isFormBusy}
+                    >
+                      AI revise
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="mt-3">
+                  <ImageDropEditor
+                    value={formData.content}
+                    onChange={(val) => handleFieldChange('content', val)}
+                    height={520}
+                    tenantId={tenant}
+                    onUploadError={setUploadError}
+                  />
+                </div>
+                <p className="mt-2 text-sm text-ink-soft">
+                  Drag or paste an image to upload it. The AI assistant proposes changes as a proof
+                  before anything is applied.
+                </p>
               </div>
-              <div className="space-y-4">
-                <Input
-                  label="Title *"
-                  type="text"
-                  value={formData.title}
-                  onChange={(e) => handleFieldChange('title', e.target.value)}
-                  placeholder="Enter entry title"
-                  required
-                  disabled={isFormBusy}
-                />
-                <SummaryField
-                  value={formData.summary}
-                  onChange={(value) => handleFieldChange('summary', value)}
-                  content={formData.content}
-                  disabled={isFormBusy}
-                  onError={setSubmitError}
-                  onLoadingChange={setIsSummarizing}
-                />
-                {mode === 'create' && (
-                  <div className="flex items-end space-x-2">
-                    <div className="w-80">
+
+              <aside className="min-w-0 self-start lg:sticky lg:top-8">
+                <h2 className="label mb-0 border-b border-rule pb-2">Entry settings</h2>
+                <div className="space-y-6 pt-4">
+                  <SummaryField
+                    value={formData.summary}
+                    onChange={(value) => handleFieldChange('summary', value)}
+                    content={formData.content}
+                    disabled={isFormBusy}
+                    onError={setSubmitError}
+                    onLoadingChange={setIsSummarizing}
+                  />
+
+                  <CategoryInput
+                    label="Categories"
+                    value={formData.categories}
+                    onChange={(categories) => handleFieldChange('categories', categories)}
+                    disabled={isFormBusy}
+                  />
+
+                  <TagInput
+                    label="Tags"
+                    value={formData.tags}
+                    onChange={(tags) => handleFieldChange('tags', tags)}
+                    disabled={isFormBusy}
+                  />
+
+                  {mode === 'create' && (
+                    <div className="border-t border-rule pt-4">
                       <Input
-                        label="Entry ID (Optional)"
+                        label="Entry ID (optional)"
                         type="number"
                         value={entryIdInput}
                         onChange={(e) => setEntryIdInput(e.target.value)}
@@ -533,119 +602,82 @@ export function EntryForm({ mode }: EntryFormProps) {
                             void handleLoadExisting();
                           }
                         }}
-                        placeholder="Leave empty for auto-generated ID"
+                        placeholder="Auto-generate"
                         disabled={isFormBusy}
+                        helpText="Leave empty to let the API assign an ID."
                       />
+                      <div className="mt-2 flex gap-2">
+                        <Button
+                          type="button"
+                          variant="secondary"
+                          size="sm"
+                          onClick={() => void handleLoadExisting()}
+                          disabled={!entryIdInput.trim() || isFormBusy}
+                          loading={isLoadingExisting}
+                        >
+                          Load entry
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => void handleLoadTemplate()}
+                          disabled={isFormBusy}
+                          loading={isLoadingTemplate}
+                        >
+                          Load template
+                        </Button>
+                      </div>
                     </div>
-                    <Button
-                      type="button"
-                      variant="secondary"
-                      onClick={() => void handleLoadExisting()}
-                      disabled={!entryIdInput.trim() || isFormBusy}
-                      loading={isLoadingExisting}
-                    >
-                      Load
-                    </Button>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Categories and Tags */}
-            <div className="border border-gray-200 p-4">
-              <h3 className="text-base font-medium text-black mb-2">Categories and Tags</h3>
-              <p className="text-sm text-gray-500 mb-4">
-                Organize your entry with categories and tags for better discoverability.
-              </p>
-              <div className="space-y-4">
-                <CategoryInput
-                  label="Categories"
-                  value={formData.categories}
-                  onChange={(categories) => handleFieldChange('categories', categories)}
-                  disabled={isFormBusy}
-                />
-                <TagInput
-                  label="Tags"
-                  value={formData.tags}
-                  onChange={(tags) => handleFieldChange('tags', tags)}
-                  disabled={isFormBusy}
-                />
-              </div>
-            </div>
-
-            {/* Content */}
-            <div className={`border border-gray-200 p-4 ${isFormBusy ? 'opacity-60 pointer-events-none' : ''}`}>
-              <h3 className="text-base font-medium text-black mb-4">Content</h3>
-              <div>
-                <label className="block text-sm font-medium text-black mb-2">
-                  Markdown Content *
-                </label>
-                <ImageDropEditor
-                  value={formData.content}
-                  onChange={(val) => handleFieldChange('content', val)}
-                  height={400}
-                  tenantId={tenant}
-                  onUploadError={setUploadError}
-                />
-              </div>
-              <p className="mt-2 text-sm text-gray-500">
-                Write your content using Markdown syntax with live preview. Drag and drop or paste images to upload.
-              </p>
-              <div className="mt-4">
-                <Button
-                  type="button"
-                  variant="secondary"
-                  onClick={() => setShowEditingDialog(true)}
-                  disabled={!formData.content.trim() || isFormBusy}
-                >
-                  AI Editing
-                </Button>
-              </div>
+                  )}
+                </div>
+              </aside>
             </div>
           </>
         )}
 
         {/* Actions */}
-        <div className="flex justify-between items-center pt-4 border-t border-gray-200">
-          <div className="flex items-center space-x-4">
+        <div className="mt-10 flex flex-wrap items-center justify-between gap-4 border-t border-ink pt-5">
+          <div className="flex flex-wrap items-center gap-4">
             <Link to={`/console/${tenant}`}>
               <Button variant="secondary" type="button">
                 Cancel
               </Button>
             </Link>
             {mode === 'edit' && (
-              <label className={`flex items-center space-x-2 text-sm text-gray-500 ${isFormBusy ? 'opacity-40 cursor-not-allowed' : ''}`}>
+              <label
+                className={`flex items-center gap-2 font-sans text-sm text-ink-soft ${
+                  isFormBusy ? 'cursor-not-allowed opacity-40' : 'cursor-pointer'
+                }`}
+              >
                 <input
                   type="checkbox"
                   checked={updateTimestamp}
                   onChange={(e) => setUpdateTimestamp(e.target.checked)}
                   disabled={isFormBusy}
-                  className="border-gray-300 text-black focus:ring-black disabled:cursor-not-allowed"
+                  className="h-3.5 w-3.5 accent-[#2B3FD0]"
                 />
-                <span>Update timestamp</span>
+                <span>Update the timestamp</span>
               </label>
             )}
           </div>
-          <div className="flex items-center space-x-3">
+          <div className="flex items-center gap-4">
             {draft.status === 'saved' && (
-              <span className="inline-flex items-center space-x-1.5 px-3 py-1.5 border border-green-300 bg-green-50 text-green-700 text-sm font-medium">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
-                <span>Draft saved</span>
+              <span className="inline-flex items-center gap-2 font-mono text-[11px] text-press">
+                <span className="h-1.5 w-1.5 rounded-full bg-press" aria-hidden="true" />
+                Draft saved
               </span>
             )}
             <Button
               type="submit"
               disabled={!formData.title.trim() || !formData.content.trim() || isFormBusy}
             >
-              {mode === 'create' ? 'Preview & Create' : 'Preview & Update'}
+              {mode === 'create' ? 'Preview and create' : 'Preview and update'}
             </Button>
           </div>
         </div>
       </form>
 
-      {/* AI Editing Dialog */}
       {showEditingDialog && (
         <AIEditingDialog
           originalContent={formData.content}

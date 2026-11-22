@@ -15,47 +15,26 @@ interface DraftBannerProps {
  */
 export function DraftBanner({ restoredAt, onDiscard, onDismiss }: DraftBannerProps) {
   return (
-    <div className="mb-4 border border-yellow-300 bg-yellow-50 p-4">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-2">
-          <svg
-            className="w-5 h-5 text-yellow-600"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-            />
-          </svg>
-          <span className="text-sm text-yellow-800">
-            Draft restored from {new Date(restoredAt).toLocaleString()}
-          </span>
-          <button
-            type="button"
-            onClick={onDiscard}
-            className="text-sm text-yellow-600 hover:text-yellow-800 underline"
-          >
-            Discard
-          </button>
-        </div>
+    <div className="flex flex-wrap items-center justify-between gap-3 border border-rule border-l-2 border-l-pencil bg-sheet px-4 py-2.5">
+      <p className="meta-line text-ink">
+        <span className="font-medium text-pencil">Draft restored</span>
+        <span className="mx-2 text-rule">|</span>
+        {new Date(restoredAt).toLocaleString()}
+      </p>
+      <div className="flex items-center gap-4">
+        <button
+          type="button"
+          onClick={onDiscard}
+          className="font-sans text-xs font-semibold text-redline underline decoration-redline/40 underline-offset-4 hover:decoration-redline"
+        >
+          Discard draft
+        </button>
         <button
           type="button"
           onClick={onDismiss}
-          className="text-yellow-600 hover:text-yellow-800"
-          aria-label="Dismiss"
+          className="font-mono text-xs text-muted hover:text-ink"
         >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M6 18L18 6M6 6l12 12"
-            />
-          </svg>
+          Keep
         </button>
       </div>
     </div>

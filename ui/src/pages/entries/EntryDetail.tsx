@@ -15,12 +15,7 @@ export function EntryDetail() {
 
   const entryId = id ? parseInt(id, 10) : 0;
 
-  const {
-    data: entry,
-    loading,
-    error,
-    refetch,
-  } = useApi(
+  const { data: entry, loading, error, refetch } = useApi(
     () => api.getEntry(tenant, entryId),
     [tenant, entryId]
   );
@@ -57,29 +52,21 @@ export function EntryDetail() {
     });
   };
 
-  const formatCategories = (categories: { name: string }[]) => {
-    return categories.map(c => c.name).join(' > ');
-  };
-
-  const formatTags = (tags: { name: string }[]) => {
-    return tags.map(t => t.name).join(', ');
-  };
-
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-64">
-        <LoadingSpinner size="lg" />
+      <div className="flex h-64 items-center justify-center">
+        <LoadingSpinner size="lg" label="Loading entry" />
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="px-4 py-3 sm:px-0">
+      <div>
         <ErrorAlert message={error} onDismiss={() => void refetch()} />
-        <div className="mt-3">
+        <div className="mt-4">
           <Link to={`/console/${tenant}`}>
-            <Button variant="secondary">Back to Entries</Button>
+            <Button variant="secondary">Back to entries</Button>
           </Link>
         </div>
       </div>
@@ -88,11 +75,11 @@ export function EntryDetail() {
 
   if (!entry) {
     return (
-      <div>
-        <div className="text-center py-12">
-          <h1 className="text-xl font-bold text-black">Entry not found</h1>
-          <Link to={`/console/${tenant}/entries`} className="mt-4 inline-block">
-            <Button>Back to Entries</Button>
+      <div className="py-16 text-center">
+        <h1 className="font-sans text-2xl font-bold tracking-tightest">Entry not found</h1>
+        <div className="mt-5">
+          <Link to={`/console/${tenant}/entries`}>
+            <Button>Back to entries</Button>
           </Link>
         </div>
       </div>
@@ -101,131 +88,133 @@ export function EntryDetail() {
 
   return (
     <div>
-      {/* Header */}
-      <div className="lg:flex lg:items-center lg:justify-between mb-8">
-        <div className="flex-1 min-w-0">
-          <nav className="flex" aria-label="Breadcrumb">
-            <ol className="flex items-center space-x-2 text-sm">
-              <li>
-                <Link to={`/console/${tenant}`} className="text-gray-500 hover:text-black">
-                  Entries
-                </Link>
-              </li>
-              <li>
-                <span className="text-gray-300">/</span>
-              </li>
-              <li>
-                <span className="text-gray-500">Entry {entry.entryId}</span>
-              </li>
-            </ol>
-          </nav>
-          <h1 className="mt-2 text-xl font-bold text-black">
-            {entry.frontMatter.title}
+      <nav aria-label="Breadcrumb" className="meta-line">
+        <Link to={`/console/${tenant}`} className="hover:text-pencil hover:underline">
+          Entries
+        </Link>
+        <span className="mx-2 text-rule">/</span>
+        <span>Entry {entry.entryId}</span>
+      </nav>
+
+      <header className="mt-3 flex flex-wrap items-start justify-between gap-6 border-b border-ink pb-6">
+        <div className="min-w-0 flex-1">
+          <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-muted">
+            Entry № {String(entry.entryId).padStart(3, '0')}
+          </p>
+          <h1 className="mt-2 font-sans text-3xl font-bold leading-tight tracking-tightest sm:text-4xl">
+            {entry.frontMatter.title || 'Untitled entry'}
           </h1>
+          {entry.frontMatter.summary && (
+            <p className="mt-3 max-w-2xl text-sm leading-relaxed text-ink-soft">
+              {entry.frontMatter.summary}
+            </p>
+          )}
         </div>
-        <div className="mt-4 flex lg:mt-0 lg:ml-4 space-x-3">
+        <div className="flex gap-3">
           <Link to={`/console/${tenant}/entries/${entry.entryId}/edit`}>
-            <Button variant="secondary">Edit</Button>
+            <Button>Edit entry</Button>
           </Link>
-          <Button
-            variant="danger"
-            onClick={() => setShowDeleteConfirm(true)}
-          >
+          <Button variant="danger" onClick={() => setShowDeleteConfirm(true)}>
             Delete
           </Button>
         </div>
-      </div>
+      </header>
 
-      {/* Entry Metadata */}
-      <div className="border border-gray-200 mb-6">
-        <div className="px-4 py-3 border-b border-gray-200">
-          <h3 className="text-base font-medium text-black">Entry Information</h3>
-        </div>
-        <dl className="divide-y divide-gray-100">
-          <div className="py-3 px-4 sm:grid sm:grid-cols-3 sm:gap-4">
-            <dt className="text-sm text-gray-500">Entry ID</dt>
-            <dd className="mt-1 text-sm text-black sm:mt-0 sm:col-span-2">{entry.entryId}</dd>
-          </div>
-          <div className="py-3 px-4 sm:grid sm:grid-cols-3 sm:gap-4">
-            <dt className="text-sm text-gray-500">Title</dt>
-            <dd className="mt-1 text-sm text-black sm:mt-0 sm:col-span-2">{entry.frontMatter.title}</dd>
-          </div>
-          {entry.frontMatter.summary && (
-            <div className="py-3 px-4 sm:grid sm:grid-cols-3 sm:gap-4">
-              <dt className="text-sm text-gray-500">Summary</dt>
-              <dd className="mt-1 text-sm text-black sm:mt-0 sm:col-span-2">{entry.frontMatter.summary}</dd>
-            </div>
-          )}
-          {entry.frontMatter.categories.length > 0 && (
-            <div className="py-3 px-4 sm:grid sm:grid-cols-3 sm:gap-4">
-              <dt className="text-sm text-gray-500">Categories</dt>
-              <dd className="mt-1 text-sm text-black sm:mt-0 sm:col-span-2">
-                {formatCategories(entry.frontMatter.categories)}
+      <div className="mt-8 grid gap-8 lg:grid-cols-[16rem_minmax(0,1fr)]">
+        <aside>
+          <h2 className="label">Front matter</h2>
+          <dl className="divide-y divide-rule border-y border-rule">
+            {entry.frontMatter.categories.length > 0 && (
+              <div className="py-3">
+                <dt className="meta-line text-muted">Categories</dt>
+                <dd className="mt-1 font-sans text-sm text-ink">
+                  {entry.frontMatter.categories.map((category, index) => (
+                    <React.Fragment key={index}>
+                      {index > 0 && <span className="mx-1 text-muted">›</span>}
+                      {category.name}
+                    </React.Fragment>
+                  ))}
+                </dd>
+              </div>
+            )}
+            {entry.frontMatter.tags.length > 0 && (
+              <div className="py-3">
+                <dt className="meta-line text-muted">Tags</dt>
+                <dd className="mt-1 flex flex-wrap gap-x-2 font-mono text-xs text-ink">
+                  {entry.frontMatter.tags.map((tag, index) => (
+                    <span key={index}>
+                      <span className="text-pencil">#</span>
+                      {tag.name}
+                    </span>
+                  ))}
+                </dd>
+              </div>
+            )}
+            <div className="py-3">
+              <dt className="meta-line text-muted">Created</dt>
+              <dd className="mt-1 font-mono text-xs leading-relaxed text-ink">
+                {formatDate(entry.created.date)}
+                <span className="block text-muted">by {entry.created.name}</span>
               </dd>
             </div>
-          )}
-          {entry.frontMatter.tags.length > 0 && (
-            <div className="py-3 px-4 sm:grid sm:grid-cols-3 sm:gap-4">
-              <dt className="text-sm text-gray-500">Tags</dt>
-              <dd className="mt-1 text-sm text-black sm:mt-0 sm:col-span-2">
-                {formatTags(entry.frontMatter.tags)}
+            <div className="py-3">
+              <dt className="meta-line text-muted">Last updated</dt>
+              <dd className="mt-1 font-mono text-xs leading-relaxed text-ink">
+                {formatDate(entry.updated.date)}
+                <span className="block text-muted">by {entry.updated.name}</span>
               </dd>
             </div>
-          )}
-          <div className="py-3 px-4 sm:grid sm:grid-cols-3 sm:gap-4">
-            <dt className="text-sm text-gray-500">Created</dt>
-            <dd className="mt-1 text-sm text-black sm:mt-0 sm:col-span-2">
-              {formatDate(entry.created.date)} by {entry.created.name}
-            </dd>
-          </div>
-          <div className="py-3 px-4 sm:grid sm:grid-cols-3 sm:gap-4">
-            <dt className="text-sm text-gray-500">Last Updated</dt>
-            <dd className="mt-1 text-sm text-black sm:mt-0 sm:col-span-2">
-              {formatDate(entry.updated.date)} by {entry.updated.name}
-            </dd>
-          </div>
-        </dl>
-      </div>
+          </dl>
+        </aside>
 
-      {/* Entry Content */}
-      <div className="border border-gray-200">
-        <div className="px-4 py-3 border-b border-gray-200">
-          <h3 className="text-base font-medium text-black">Content</h3>
-        </div>
-        <div className="px-4 py-4">
-          <pre className="whitespace-pre-wrap text-sm text-black font-mono bg-gray-50 p-4 border border-gray-200">
+        <section>
+          <div className="flex items-baseline justify-between border-b border-rule pb-2">
+            <h2 className="label mb-0">Markdown source</h2>
+            <span className="meta-line">
+              {entry.content.split('\n').length} lines
+            </span>
+          </div>
+          <pre className="mt-4 overflow-x-auto whitespace-pre-wrap break-words border border-rule bg-sheet p-5 font-mono text-[12.5px] leading-[1.7] text-ink">
             {entry.content}
           </pre>
-        </div>
+        </section>
       </div>
 
-      {/* Delete Confirmation Modal */}
       {showDeleteConfirm && (
-        <div className="fixed inset-0 bg-black bg-opacity-30 overflow-y-auto h-full w-full z-50">
-          <div className="relative top-20 mx-auto p-6 border border-gray-200 w-96 bg-white">
-            <div className="text-center">
-              <h3 className="text-lg font-medium text-black">Delete Entry</h3>
-              <div className="mt-4 mb-6">
-                <p className="text-sm text-gray-500">
-                  Are you sure you want to delete this entry? This action cannot be undone.
-                </p>
-              </div>
-              <div className="flex justify-center space-x-4">
-                <Button
-                  variant="secondary"
-                  onClick={() => setShowDeleteConfirm(false)}
-                  disabled={deleteLoading}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  variant="danger"
-                  onClick={() => handleDelete()}
-                  loading={deleteLoading}
-                >
-                  Delete
-                </Button>
-              </div>
+        <div
+          className="modal-scrim fixed inset-0 z-50 flex items-start justify-center px-4 py-24"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget && !deleteLoading) {
+              setShowDeleteConfirm(false);
+            }
+          }}
+        >
+          <div
+            role="alertdialog"
+            aria-modal="true"
+            aria-labelledby="delete-entry-title"
+            className="w-full max-w-md border border-rule bg-paper p-6 shadow-slip"
+          >
+            <h2 id="delete-entry-title" className="font-sans text-xl font-bold tracking-tightest">
+              Delete this entry?
+            </h2>
+            <p className="mt-2 break-words font-mono text-xs leading-relaxed text-ink-soft">
+              {entry.frontMatter.title || 'Untitled entry'}
+            </p>
+            <p className="mt-3 text-sm leading-relaxed text-ink-soft">
+              The entry is removed from the API. This cannot be undone.
+            </p>
+            <div className="mt-6 flex justify-end gap-3">
+              <Button
+                variant="secondary"
+                onClick={() => setShowDeleteConfirm(false)}
+                disabled={deleteLoading}
+              >
+                Keep entry
+              </Button>
+              <Button variant="danger" onClick={() => handleDelete()} loading={deleteLoading}>
+                Delete entry
+              </Button>
             </div>
           </div>
         </div>

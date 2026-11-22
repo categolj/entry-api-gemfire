@@ -16,18 +16,21 @@ export function Button({
   className = '',
   ...props
 }: ButtonProps) {
-  const baseClasses = 'inline-flex items-center justify-center font-medium focus:outline-none transition-opacity disabled:opacity-40 disabled:cursor-not-allowed';
+  const baseClasses =
+    'inline-flex items-center justify-center gap-2 rounded-[2px] font-sans font-semibold tracking-[-0.01em] transition-colors duration-150 disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none';
 
   const variantClasses = {
-    primary: 'bg-black text-white hover:opacity-80',
-    secondary: 'bg-white text-black border border-gray-300 hover:bg-gray-50',
-    danger: 'bg-white text-red-600 border border-red-300 hover:bg-red-50',
-    ghost: 'text-black hover:opacity-70',
+    primary: 'bg-pencil text-sheet hover:bg-pencil-deep',
+    secondary:
+      'border border-ink/70 bg-transparent text-ink hover:bg-ink hover:text-sheet',
+    danger:
+      'border border-redline/60 bg-transparent text-redline hover:bg-redline-wash',
+    ghost: 'text-ink underline decoration-rule decoration-1 underline-offset-4 hover:decoration-pencil hover:text-pencil',
   };
 
   const sizeClasses = {
-    sm: 'px-3 py-1.5 text-sm',
-    md: 'px-4 py-2 text-sm',
+    sm: 'px-2.5 py-1 text-xs',
+    md: 'px-3.5 py-2 text-sm',
     lg: 'px-5 py-2.5 text-base',
   };
 
@@ -37,13 +40,15 @@ export function Button({
     <button
       className={classes}
       disabled={disabled || loading}
+      aria-busy={loading || undefined}
       {...props}
     >
       {loading && (
         <svg
-          className="animate-spin -ml-1 mr-2 h-4 w-4 text-current"
+          className="h-3.5 w-3.5 animate-spin"
           fill="none"
           viewBox="0 0 24 24"
+          aria-hidden="true"
         >
           <circle
             className="opacity-25"

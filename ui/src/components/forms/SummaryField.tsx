@@ -53,24 +53,28 @@ export function SummaryField({
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-1">
-        <label className="block text-sm font-medium text-black">Summary</label>
+      <div className="mb-1 flex items-end justify-between gap-2">
+        <label className="label mb-0" htmlFor="summary-field">
+          Summary
+        </label>
         <Button
           type="button"
-          variant="secondary"
+          variant="ghost"
           size="sm"
           onClick={() => void handleAutoSummarize()}
           disabled={isSummarizing || !content.trim() || disabled}
           loading={isSummarizing}
+          className="px-0 py-0 text-[11px]"
         >
-          Auto Generate
+          Write with AI
         </Button>
       </div>
       <Textarea
+        id="summary-field"
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        placeholder="Brief description of the entry"
-        rows={2}
+        placeholder="One or two sentences shown next to the entry."
+        rows={3}
         disabled={isDisabled}
       />
     </div>
